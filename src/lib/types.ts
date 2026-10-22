@@ -17,7 +17,7 @@ export interface Profile {
   districts: string[]
 }
 
-export type Weekday = 'Mo' | 'Di' | 'Mi' | 'Do' | 'Fr' | 'Sa'
+export type Weekday = 'Mo' | 'Di' | 'Mi' | 'Do' | 'Fr' | 'Sa' | 'So'
 
 export interface Tour {
   id: string

@@ -33,21 +33,23 @@ export default function AnswerCard(p: Props) {
     return { kind: 'B' as const, r: evaluateParking(district) }
   }, [p.flow, tours, ev, p.profile, district])
 
+  const prefix = useExample ? 'Beispielrechnung: ' : ''
   const headline = useMemo(() => {
     if (result.kind === 'A') {
       const { ja, nein, rows } = result.r
-      return nein === 0
+      return prefix + (nein === 0
         ? `Alle ${rows.length} Touren fahren mit einem E-Transporter, auch im Winter.`
-        : `${ja} von ${rows.length} Touren fahren mit einem E-Transporter. ${nein} ${nein === 1 ? 'Tour braucht' : 'Touren brauchen'} unterwegs eine Schnellladesäule.`
+        : `${ja} von ${rows.length} Touren ${ja === 1 ? 'fährt' : 'fahren'} mit einem E-Transporter. ${nein} ${nein === 1 ? 'Tour braucht' : 'Touren brauchen'} unterwegs eine Schnellladesäule.`)
     }
     if (result.kind === 'C') {
-      const { n, needed, spare, overlaps } = result.r
-      if (spare === 0) return `Sie brauchen alle ${n} Fahrzeuge: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} laufen ${needed} Touren gleichzeitig.`
-      return `Mit ${n - spare} statt ${n} Fahrzeugen schaffen Sie alle Touren${overlaps.length ? `, außer ${overlaps[0].day} ${overlaps[0].from} bis ${overlaps[0].to} (${overlaps[0].count} Touren gleichzeitig)` : ''}.`
+      const { n, needed, spare, overlaps, shortSpike } = result.r
+      const spike = shortSpike && overlaps.length && overlaps[0].count > needed ? overlaps[0] : null
+      if (spare === 0) return prefix + `Sie brauchen alle ${n} Fahrzeuge: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} ${needed === 1 ? 'läuft 1 Tour' : `laufen ${needed} Touren`} gleichzeitig.`
+      return prefix + `Mit ${n - spare} statt ${n} Fahrzeugen schaffen Sie alle Touren${spike ? `, außer ${spike.day} ${spike.from} bis ${spike.to} (${spike.count} Touren gleichzeitig)` : ''}.`
     }
     const { points, okCount } = result.r
-    return `Von Ihren ${points.length} häufigsten Adressen in ${district} haben ${okCount} eine Ladezone innerhalb 150 m, ${points.length - okCount} nicht.`
-  }, [result, district])
+    return `Beispielrechnung: Von 12 Beispieladressen in ${district} haben ${okCount} eine Ladezone innerhalb 150 m, ${points.length - okCount} nicht.`
+  }, [result, district, prefix])
 
   const text = useMemo(() => `Fuhrwerk, Antwort vom ${today()}\nFrage: ${p.question}\n\n${headline}\n\nBeispielrechnung, Quellen in der App. Nichts wurde gesendet.`, [headline, p.question])
 
@@ -81,14 +83,14 @@ export default function AnswerCard(p: Props) {
 
       {result.kind === 'A' && <FlowA r={result.r} ev={ev} setEv={setEv} useExample={useExample} />}
       {result.kind === 'B' && <FlowB r={result.r} district={district} />}
-      {result.kind === 'C' && <FlowC r={result.r} useExample={useExample} />}
+      {result.kind === 'C' && <FlowC r={result.r} useExample={useExample} tourCount={tours.length} />}
 
       <SynthNote>
         {p.flow === 'B'
-          ? 'Beispielrechnung mit 12 synthetischen Adressen. In der nächsten Version aus Ihrer Kundenliste, die auf diesem Gerät bleibt. Lieferzonen gibt es nirgends als Datensatz, siehe Datenquellen.'
+          ? 'Beispielrechnung mit 12 synthetischen Adressen, nicht Ihre. In der nächsten Version aus Ihrer Kundenliste, die auf diesem Gerät bleibt. Uhrzeiten aus Ihrer Frage werden noch nicht ausgewertet. Lieferzonen gibt es nirgends als Datensatz, siehe Datenquellen.'
           : useExample
             ? 'Beispielrechnung mit 9 synthetischen Touren. Mit Ihren eigenen Touren unter „Meine Touren“ rechnet die Karte mit Ihren Zahlen, die auf diesem Gerät bleiben.'
-            : 'Gerechnet mit Ihren Touren von diesem Gerät. Ladepunkte, Parkzonen und Kosten sind in dieser Version noch Beispielwerte, siehe Datenquellen.'}
+            : 'Gerechnet mit Ihren Touren von diesem Gerät. Ladepunkte, Parkzonen und Kosten sind in dieser Version noch Beispielwerte, siehe Datenquellen. Zahlen und Uhrzeiten aus Ihrer Frage (etwa „4 von 12“ oder „6 Uhr früh“) werden noch nicht ausgewertet.'}
       </SynthNote>
 
       <div className="no-print mt-6 pt-4 border-t border-line flex flex-wrap items-center gap-3">
@@ -112,7 +114,7 @@ function FlowA({ r, ev, setEv, useExample }: { r: ReturnType<typeof evaluateEv>;
       <ul className="grid sm:grid-cols-3 gap-3 mb-5">
         <Fact big={`${ev.rangeSummer} km`} small={`Reichweite angenommen, im Winter ${r.winter} km`} />
         <Fact big={`${r.kwhWeek} kWh`} small={`Ladebedarf pro Woche für ${r.kmWeek} km (28 kWh je 100 km, Beispielwert)`} />
-        <Fact big={ev.depotChargeWindow ? 'Mittags am Depot' : 'Kein Ladefenster'} small={ev.depotChargeWindow ? 'Ladefenster reicht für alle Touren ohne Schnellladung' : 'Ohne Ladefenster werden knappe Touren unsicher'} />
+        <Fact big={ev.depotChargeWindow ? 'Mittags am Depot' : 'Kein Ladefenster'} small={ev.depotChargeWindow ? `Ladefenster reicht für ${r.ja} von ${r.rows.length} Touren; ${r.nein === 0 ? 'keine' : r.nein} ${r.nein === 1 ? 'braucht' : 'brauchen'} zusätzlich Schnellladung unterwegs` : 'Ohne Ladefenster werden knappe Touren unsicher'} />
       </ul>
       <h3 className="font-semibold mb-2">Alle {r.rows.length} Touren im Einzelnen</h3>
       <div className="overflow-x-auto">
@@ -134,7 +136,7 @@ function FlowA({ r, ev, setEv, useExample }: { r: ReturnType<typeof evaluateEv>;
       <Tomorrow>
         {r.nein === 0
           ? `Sie können alle ${r.rows.length} Touren ab dem ersten Tag elektrisch fahren und laden am Depot.`
-          : `Sie können ${r.ja} Touren ab dem ersten Tag elektrisch fahren und laden am Depot. Für ${r.rows.filter((x) => x.verdict === 'nein').map((x) => x.tour.name.split(',')[0]).join(' und ')} planen Sie 25 Minuten Ladezeit beim Kunden ein oder lassen diese vorerst beim Diesel.`}
+          : `Sie können ${r.ja} ${r.ja === 1 ? 'Tour' : 'Touren'} ab dem ersten Tag elektrisch fahren und laden am Depot. Für ${r.rows.filter((x) => x.verdict === 'nein').map((x) => x.tour.name.split(',')[0]).join(' und ')} planen Sie 25 Minuten Ladezeit beim Kunden ein oder lassen ${r.nein === 1 ? 'diese Tour' : 'diese Touren'} vorerst beim Diesel.`}
       </Tomorrow>
       <details className="no-print mt-4">
         <summary className="cursor-pointer text-sm font-medium">Annahmen ändern</summary>
@@ -206,13 +208,17 @@ function FlowB({ r, district }: { r: ReturnType<typeof evaluateParking>; distric
 }
 
 /* ---------- C ---------- */
-function FlowC({ r, useExample }: { r: ReturnType<typeof evaluateFleet>; useExample: boolean }) {
+function FlowC({ r, useExample, tourCount }: { r: ReturnType<typeof evaluateFleet>; useExample: boolean; tourCount: number }) {
+  const thin = !useExample && tourCount < r.n
   return (
     <div>
+      {thin && (
+        <p className="card mb-4 text-sm">Sie haben {tourCount} {tourCount === 1 ? 'Tour' : 'Touren'} für {r.n} Fahrzeuge eingetragen. Die Rechnung ist erst belastbar, wenn alle Touren eines typischen Tages drin sind; bis dahin ist die Zahl unten eine Untergrenze, keine Empfehlung.</p>
+      )}
       <ul className="grid sm:grid-cols-3 gap-3 mb-5">
-        <Fact big={`${r.needed} Fahrzeuge`} small={r.shortSpike ? `reichen an normalen Tagen; Spitze ${r.maxPeak} am ${r.overlaps.map((o) => o.day).join(', ')}, lösbar durch Tourentausch. Sie haben ${r.n}` : `gleichzeitig unterwegs in der Spitze; Sie haben ${r.n}`} />
+        <Fact big={`${r.needed} ${r.needed === 1 ? 'Fahrzeug' : 'Fahrzeuge'}`} small={r.shortSpike ? `reichen an normalen Tagen; Spitze ${r.maxPeak} am ${r.overlaps.map((o) => o.day).join(', ')}, lösbar durch Tourentausch. Sie haben ${r.n}` : `gleichzeitig unterwegs in der Spitze; Sie haben ${r.n}`} />
         <Fact big={`ca. ${(r.spare * r.costPerVehicle).toLocaleString('de-DE')} € pro Jahr`} small={`Vollkosten für ${r.spare} ${r.spare === 1 ? 'Fahrzeug' : 'Fahrzeuge'} (Leasing, Versicherung, Wartung, Steuer; ${r.costPerVehicle.toLocaleString('de-DE')} € je Fahrzeug, Beispielwert)`} />
-        <Fact big={`${r.util} %`} small={`Auslastung Ihrer ${r.n} Fahrzeuge, Mo bis Fr 7 bis 18 Uhr (${r.hoursWeek} Tourstunden pro Woche)`} />
+        <Fact big={`${r.util} %`} small={`Auslastung Ihrer ${r.n} Fahrzeuge an ${r.activeDays} Tourtagen, 11 Stunden je Tag (${r.hoursWeek} Tourstunden pro Woche)`} />
       </ul>
       <h3 className="font-semibold mb-2">Gleichzeitige Touren je Wochentag</h3>
       <div className="grid gap-1.5">
@@ -230,8 +236,8 @@ function FlowC({ r, useExample }: { r: ReturnType<typeof evaluateFleet>; useExam
       </div>
       <Tomorrow>
         {r.spare > 0
-          ? `Sie lassen ${r.spare === 1 ? 'ein Fahrzeug' : `${r.spare} Fahrzeuge`} vier Wochen stehen und fahren alle Touren mit ${r.n - r.spare}.${r.overlaps.length ? ` ${r.overlaps[0].day} ${r.overlaps[0].from} bis ${r.overlaps[0].to} laufen ${r.overlaps[0].count} Touren gleichzeitig: eine Tour 45 Minuten früher starten.` : ''} Wenn in den vier Wochen nichts liegen bleibt, geben Sie das Leasing zurück.`
-          : `Alle ${r.n} Fahrzeuge werden gebraucht. Bevor Sie ein weiteres leasen, prüfen Sie, ob eine Tour am ${r.overlaps[0]?.day ?? 'Spitzentag'} verschoben werden kann.`}
+          ? `Sie lassen ${r.spare === 1 ? 'ein Fahrzeug' : `${r.spare} Fahrzeuge`} vier Wochen stehen und fahren alle Touren mit ${r.n - r.spare}.${r.shortSpike && r.overlaps.length && r.overlaps[0].count > r.needed ? ` ${r.overlaps[0].day} ${r.overlaps[0].from} bis ${r.overlaps[0].to} laufen ${r.overlaps[0].count} Touren gleichzeitig: eine Tour 45 Minuten früher starten.` : ''} Wenn in den vier Wochen nichts liegen bleibt, geben Sie ${r.spare === 1 ? 'das Fahrzeug' : 'die Fahrzeuge'} ab, ob Leasing, Verkauf oder Pool.`
+          : `Alle ${r.n} Fahrzeuge werden gebraucht. Bevor Sie ein weiteres anschaffen, prüfen Sie, ob eine Tour am ${r.overlaps[0]?.day ?? 'Spitzentag'} verschoben werden kann.`}
       </Tomorrow>
       <Sources items={[
         useExample ? 'Tourendaten: synthetisch, 9 Touren eines Beispielbetriebs, nicht Ihre Daten' : 'Tourendaten: Ihre Einträge unter „Meine Touren“, nur auf diesem Gerät',

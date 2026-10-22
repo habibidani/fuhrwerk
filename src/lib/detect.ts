@@ -6,9 +6,9 @@ const E = '(?=$|[^a-zäöüß])'
 const rx = (list: string[]) => list.map((p) => new RegExp(B + p + E))
 
 const KEYS: Record<Flow, RegExp[]> = {
-  A: rx(['e-?transporter', 'elektrisch(e[rsn]?)?', 'elektro', '(auf)?laden', 'ladesäulen?', 'reichweite', 'e-?autos?', 'e-?fahrzeuge?', 'strom', 'akku', 'batterie', 'umstellen', 'umstieg']),
+  A: rx(['e-?transporter', 'elektrisch(e[rsn]?)?', 'elektro', '(auf)?laden', 'ladesäulen?', 'reichweite', 'e-?autos?', 'e-?fahrzeuge?', 'strom', 'akku', 'batterie', 'umstellen', 'umstieg', 'umstellung', 'elektrifizier\\w*', 'e-?mobil\\w*']),
   B: rx(['halten', 'parken', 'halteverbot', 'lieferzonen?', 'ladezonen?', 'knöllchen', 'parkplatz', 'parkplätze', 'stehen', 'strafzettel', 'parkraum', 'anhalten', 'bußgeld', 'abschlepp\\w*']),
-  C: rx(['fahrzeuge zu viel', 'zu viele fahrzeuge', 'auslastung', 'ausgelastet', 'brauche ich', 'brauchen wir', 'wie viele', 'abschaffen', 'weniger', 'zu viel', 'leasing zurück', 'reicht', 'reichen']),
+  C: rx(['fahrzeuge zu viel', 'zu viele fahrzeuge', 'auslastung', 'ausgelastet', 'brauche ich', 'brauchen wir', 'wie viele', 'abschaffen', 'weniger', 'zu viel', 'leasing zurück', 'reicht', 'reichen', 'zu viele', 'autos?', 'wagen', 'schicht\\w*', 'flotte verkleinern', 'fuhrpark verkleinern']),
 }
 
 /** Liefert den erkannten Flow oder null, wenn die Frage nicht einsortiert werden kann. */

@@ -24,6 +24,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
   const [question, setQuestion] = useState('')
   const [flow, setFlow] = useState<Flow | null>(null)
   const [unknown, setUnknown] = useState(false)
+  const [viaChip, setViaChip] = useState(false)
   const [err, setErr] = useState('')
   const [toast, setToast] = useState<string | null>(null)
   const [history, setHistory] = useHistory()
@@ -57,12 +58,14 @@ export default function Ask({ profile, setProfile, tours }: Props) {
     const f = detect(q)
     setFlow(f)
     setUnknown(f === null)
+    setViaChip(false)
     go(2)
   }
 
   const chooseFlow = (f: Flow) => {
     setFlow(f)
     setUnknown(false)
+    setViaChip(true)
   }
 
   const toAnswer = () => {
@@ -76,7 +79,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
     if (!entryId || !flow) return
     setHistory((h) => {
       if (h.some((e) => e.id === entryId)) return h
-      const e: HistoryEntry = { id: entryId, at: nowIso(), question: question.trim(), flow, headline: s.headline }
+      const e: HistoryEntry = { id: entryId, at: nowIso(), question: question.trim(), flow, headline: (viaChip ? 'Stichwort nicht erkannt, per Chip gewählt · ' : '') + s.headline }
       return [e, ...h].slice(0, 50)
     })
   }
@@ -91,6 +94,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
     setQuestion('')
     setFlow(null)
     setUnknown(false)
+    setViaChip(false)
     setEntryId(null)
     setMax(1)
     setStep(1)

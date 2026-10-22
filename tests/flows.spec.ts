@@ -19,10 +19,12 @@ test.describe('Fuhrwerk v3', () => {
   })
 
   test('Flow B: Halten in Mitte, schematische Karte', async ({ page }) => {
+    await page.goto('/#/frage')
+    await page.getByRole('button', { name: 'Mitte', exact: true }).click()
     await ask(page, 'Wo dürfen meine Fahrzeuge in Mitte halten, ohne Knöllchen?')
     await expect(page.getByText('Halten und Parken: Wo stehen Ihre Fahrzeuge')).toBeVisible()
     await page.getByRole('button', { name: 'Antwort berechnen' }).click()
-    await expect(page.getByRole('heading', { level: 2 })).toContainText(/häufigsten Adressen in Mitte/)
+    await expect(page.getByRole('heading', { level: 2 })).toContainText(/Beispieladressen in Mitte/)
     await expect(page.getByRole('img', { name: /Schematische Karte/ })).toBeVisible()
   })
 
@@ -45,7 +47,7 @@ test.describe('Fuhrwerk v3', () => {
   })
 
   test('Unbekannte Frage wird ehrlich abgelehnt, nicht erraten', async ({ page }) => {
-    await ask(page, 'Wie wird das Wetter morgen in Berlin?')
+    await ask(page, 'Wie wird das Wetter morgen in Berlin für die Baustelle?')
     await expect(page.getByRole('heading', { name: 'Diese Frage kann ich noch nicht beantworten.' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Antwort berechnen' })).toBeDisabled()
     await page.getByRole('button', { name: 'Brauche ich wirklich so viele Fahrzeuge?' }).click()
@@ -63,6 +65,8 @@ test.describe('Fuhrwerk v3', () => {
     await page.getByRole('button', { name: 'Antwort berechnen' }).click()
     await page.getByRole('button', { name: 'Weiter: Zurückgeben, optional' }).click()
     await expect(page.getByText('Was nie rausgeht')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Ohne Beitrag abschließen' })).toBeVisible()
+    await page.getByRole('checkbox').first().check()
     await page.getByRole('button', { name: 'Beitrag vormerken (Demo)' }).click()
     await expect(page.getByRole('heading', { name: 'Vorgemerkt. Nichts wurde gesendet.' })).toBeVisible()
     await page.goto('/#/verlauf')

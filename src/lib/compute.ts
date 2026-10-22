@@ -1,7 +1,7 @@
 import type { Profile, Tour, Weekday } from './types'
 import { LADEPUNKTE_BEISPIEL, PARKZONEN_BEISPIEL, type Bezirk } from '../data/berlin'
 
-export const WEEKDAYS: Weekday[] = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+export const WEEKDAYS: Weekday[] = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
 const toMin = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number)
@@ -57,8 +57,8 @@ export interface Overlap {
 
 export function evaluateFleet(tours: Tour[], p: Profile) {
   const n = Math.max(1, p.vehicles)
-  const perDay: Record<Weekday, number> = { Mo: 0, Di: 0, Mi: 0, Do: 0, Fr: 0, Sa: 0 }
-  const windows: Record<Weekday, { from: number; to: number }> = { Mo: { from: 0, to: 0 }, Di: { from: 0, to: 0 }, Mi: { from: 0, to: 0 }, Do: { from: 0, to: 0 }, Fr: { from: 0, to: 0 }, Sa: { from: 0, to: 0 } }
+  const perDay: Record<Weekday, number> = { Mo: 0, Di: 0, Mi: 0, Do: 0, Fr: 0, Sa: 0, So: 0 }
+  const windows: Record<Weekday, { from: number; to: number }> = { Mo: { from: 0, to: 0 }, Di: { from: 0, to: 0 }, Mi: { from: 0, to: 0 }, Do: { from: 0, to: 0 }, Fr: { from: 0, to: 0 }, Sa: { from: 0, to: 0 }, So: { from: 0, to: 0 } }
   const overlaps: Overlap[] = []
   WEEKDAYS.forEach((day) => {
     const todays = tours.filter((t) => t.days.includes(day))
@@ -97,9 +97,10 @@ export function evaluateFleet(tours: Tour[], p: Profile) {
   const spare = Math.max(0, n - needed)
   // Auslastung je Fahrzeug: Tourstunden je Woche verteilt auf n Fahrzeuge, 55 h Verfügbarkeit (Mo bis Fr 7 bis 18 Uhr)
   const hoursWeek = tours.reduce((acc, t) => acc + ((toMin(t.end) - toMin(t.start)) / 60) * t.days.length, 0)
-  const util = Math.min(100, Math.round((hoursWeek / (n * 55)) * 100))
+  const activeDays = WEEKDAYS.filter((d) => tours.some((t) => t.days.includes(d))).length || 5
+  const util = Math.min(100, Math.round((hoursWeek / (n * 11 * activeDays)) * 100))
   const costPerVehicle = 7500 // Beispielwert
-  return { n, needed, spare, perDay, overlaps, maxPeak, shortSpike, util, hoursWeek: Math.round(hoursWeek), costPerVehicle }
+  return { n, needed, spare, perDay, overlaps, maxPeak, shortSpike, util, activeDays, hoursWeek: Math.round(hoursWeek), costPerVehicle }
 }
 
 const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`

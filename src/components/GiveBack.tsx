@@ -17,7 +17,7 @@ const VIAS = ['Innung / Handwerkskammer Berlin', 'Verband', 'Leitstelle', 'Pfleg
 export default function GiveBack({ flow, profile, say, onDone, onBack }: Props) {
   const spec = FLOWS[flow]
   const [via, setVia] = useState(viaFor(profile))
-  const [fields, setFields] = useState<string[]>(spec.giveBackFields)
+  const [fields, setFields] = useState<string[]>([])
   const [done, setDone] = useState(false)
   const [, setPledges] = usePledges()
   const none = via === 'gar nicht' || fields.length === 0

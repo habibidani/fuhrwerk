@@ -39,7 +39,7 @@ export const FLOWS: Record<Flow, FlowSpec> = {
   B: {
     needsOwn: (_p, hasTours) => [
       { status: 's', title: 'Adressen Ihrer häufigsten Kunden', detail: 'In dieser Version 12 Beispieladressen, markiert als synthetisch. Später: Export aus Ihrer Rechnungssoftware, bleibt bei Ihnen.', sourceId: 'eigene' },
-      tours(hasTours),
+      { status: 'y', title: 'Uhrzeiten Ihrer Stopps', detail: 'Noch nicht ausgewertet. Uhrzeiten aus Ihrer Frage (zum Beispiel „6 Uhr früh“) fließen in dieser Version nicht ein.' + (hasTours ? ' Ihre Touren werden hier noch nicht verwendet.' : ''), sourceId: 'eigene' },
     ],
     needsExt: () => [
       lieferzonen(),

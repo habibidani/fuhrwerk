@@ -70,6 +70,10 @@ Zwei Richtungen: Flottendaten lokal scannen, sensible Felder klassifizieren, Pri
 - Annahmen (Reichweite, Winterfaktor, Ladefenster) in der Antwort änderbar
 - 8 Playwright-Tests für die drei Flows, unbekannte Eingaben, Zurückgeben, Feedback und Datenquellen
 
+### Synthetischer Re-Test von v3 (22. Okt, drei KI-Personas: Gebäudereinigung, Elektro, Pflege)
+
+Drei KI-Personas haben die v3-App per Playwright durchgeklickt (synthetisch, keine echten Menschen). Was daraus sofort geändert wurde: Überschrift beginnt mit „Beispielrechnung:“, solange keine eigenen Daten da sind; Flow B spricht von Beispieladressen, nicht von „Ihren“; Warnung, wenn weniger Touren als Fahrzeuge eingetragen sind; Sonntag und „Umland (Brandenburg)“ ergänzt; Ladefenster-Kachel an das Ergebnis gekoppelt; „außer …“ nur bei echter Überlappung; Singular/Plural; Stichwörter „zu viele“, „Autos“, „Wagen“, „Schicht“, „Umstellung“, „elektrifizieren“; Chip-Wahl im Verlauf als „Stichwort nicht erkannt“ markiert; Zurückgeben als Opt-in; kein vorbelegter Bezirk; die Antwort sagt, was sie nicht auswertet (Zahlen und Uhrzeiten aus der Frage). Offen: Uhrzeit-Logik für Parkzonen, „welche 4 Touren zuerst“, Schichtlogik je Branche, Touren-Import.
+
 ## Nächste Schritte
 
 - Fünf echte Sessions mit Berliner Handwerksbetrieben (Woche 44), Einwilligung zuerst

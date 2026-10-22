@@ -11,6 +11,7 @@ export const BEZIRKE = [
   'Marzahn-Hellersdorf',
   'Lichtenberg',
   'Reinickendorf',
+  'Umland (Brandenburg)',
 ] as const
 
 export type Bezirk = (typeof BEZIRKE)[number]
@@ -29,6 +30,7 @@ export const LADEPUNKTE_BEISPIEL: Record<Bezirk, { punkte: number; schnell: numb
   'Marzahn-Hellersdorf': { punkte: 110, schnell: 15 },
   'Lichtenberg': { punkte: 130, schnell: 17 },
   'Reinickendorf': { punkte: 120, schnell: 13 },
+  'Umland (Brandenburg)': { punkte: 90, schnell: 20 },
 }
 
 // Beispiel: Anteil bewirtschafteter Parkraum je Bezirk (Innenstadt hoch, Rand niedrig). Synthetisch.
@@ -45,4 +47,5 @@ export const PARKZONEN_BEISPIEL: Record<Bezirk, 'hoch' | 'mittel' | 'niedrig'> =
   'Marzahn-Hellersdorf': 'niedrig',
   'Lichtenberg': 'niedrig',
   'Reinickendorf': 'niedrig',
+  'Umland (Brandenburg)': 'niedrig',
 }

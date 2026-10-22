@@ -30,7 +30,7 @@ export function useLocal<T>(key: string, fallback: T): [T, (v: T | ((prev: T) =>
   return [value, set]
 }
 
-export const DEFAULT_PROFILE: Profile = { branche: 'SHK/Elektro', vehicles: 6, districts: ['Mitte'] }
+export const DEFAULT_PROFILE: Profile = { branche: 'SHK/Elektro', vehicles: 6, districts: [] }
 
 export const useProfile = () => useLocal<Profile>('profile', DEFAULT_PROFILE)
 export const useTours = () => useLocal<Tour[]>('tours', [])
