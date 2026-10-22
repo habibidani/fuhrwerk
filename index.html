@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuhrpark-Fragen, mit Daten beantwortet.</title>
+<meta name="description" content="Fuhrpark-Fragen, mit Daten beantwortet. Konzept-Prototyp v2, Team 1, CODE University Berlin.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f4e79'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M32 10v12M32 42v12M10 32h12M42 32h12' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#16202a; --muted:#5b6672; --line:#dbe1e7; --bg:#f3f5f7; --card:#ffffff;
+  --accent:#1f4e79; --accent-ink:#163a5a; --accent-soft:#e9f0f7; --accent-line:#b9cde0;
+  --green:#1e7a46; --green-soft:#e4f3ea; --amber:#a86a0a; --amber-soft:#fbefd9; --red:#b23a30; --red-soft:#f9e4e2;
+  --shadow:0 18px 50px rgba(22,32,42,.10), 0 2px 6px rgba(22,32,42,.06);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{font-size:18px;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #f0a92e;outline-offset:3px}
+a{color:var(--accent)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* Header */
+.hdr{background:var(--card);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;flex-direction:column;gap:0}
+.brand .name{font-weight:800;font-size:1.45rem;line-height:1.15;letter-spacing:-.01em;color:var(--accent)}
+.brand .claim{color:var(--muted);font-size:.9rem}
+.hdr-r{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.badge{font-size:.78rem;color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.reset{font-size:.9rem;background:none;border:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;padding:6px 2px}
+
+/* Fortschritt */
+.prog{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 20px;padding:0;list-style:none}
+.prog li{margin:0}
+.prog button{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;border-top:4px solid var(--line);padding:12px 4px 0;text-align:left;color:var(--muted);font-size:.95rem}
+.prog button .n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);font-weight:700;font-size:.85rem;flex:none}
+.prog button.done{border-top-color:var(--accent-line);color:var(--ink);cursor:pointer}
+.prog button.done .n{border-color:var(--accent);background:var(--accent);color:#fff}
+.prog button.cur{border-top-color:var(--accent);color:var(--ink);font-weight:700}
+.prog button.cur .n{border-color:var(--accent);color:var(--accent)}
+.prog button:disabled{cursor:default}
+
+/* Screens */
+.screen{display:none;animation:fade .2s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}.toast{transition:none}}
+h1{font-size:2rem;line-height:1.2;margin:0 0 4px;letter-spacing:-.01em}
+h1:focus{outline:none}
+.lead{color:var(--muted);margin:0 0 18px;font-size:1rem}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px;box-shadow:0 1px 2px rgba(22,32,42,.04)}
+label{display:block;font-weight:600;font-size:.95rem;margin-bottom:6px}
+textarea{width:100%;min-height:120px;resize:vertical;padding:16px 18px;border:2px solid var(--line);border-radius:12px;background:#fff;font-size:1.25rem;line-height:1.4}
+textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 4px var(--accent-soft)}
+.err{color:var(--red);font-size:.95rem;margin:8px 0 0;min-height:1.4em}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 0}
+.chip{border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent-ink);border-radius:999px;padding:8px 14px;font-size:.95rem;line-height:1.3}
+.chip:hover{background:#dbe7f3}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.hint{font-size:.85rem;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:2fr 1fr 2.5fr;gap:18px;margin-top:24px}
+select,input[type=number]{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff;font-size:1rem}
+select:focus,input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 4px var(--accent-soft)}
+.bez{display:flex;flex-wrap:wrap;gap:6px}
+.bez .chip{font-size:.85rem;padding:5px 10px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px}
+.btn{border:2px solid var(--accent);background:var(--accent);color:#fff;border-radius:12px;padding:13px 22px;font-weight:700;font-size:1.05rem;line-height:1.2}
+.btn:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+.btn.sec{background:#fff;color:var(--accent)}
+.btn.sec:hover{background:var(--accent-soft)}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-weight:600;padding-left:6px;padding-right:6px}
+
+/* Schritt 2 */
+.echo{font-size:1.35rem;line-height:1.4;margin:0 0 6px}
+.echo q{quotes:"\201E" "\201C";font-style:italic}
+.ctx{color:var(--muted);margin:0 0 20px}
+.unknown{background:var(--amber-soft);border:1px solid #ecd4a4;border-radius:var(--radius);padding:22px 24px;margin:0 0 22px}
+.unknown h2{margin:0 0 6px;font-size:1.3rem}
+.unknown p{margin:0 0 14px}
+.choice{display:grid;gap:10px}
+.choice button{text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;font-size:1.05rem}
+.choice button:hover{border-color:var(--accent)}
+.choice button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.unknown .hint{margin-top:14px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col h3{margin:0 0 12px;font-size:1.05rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.need{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.need:first-of-type{border-top:0}
+.need .t{font-weight:600}
+.need .d{grid-column:2;color:var(--muted);font-size:.9rem}
+.amp{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;white-space:nowrap;padding-top:3px}
+.amp i{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+.amp.g{color:var(--green)}.amp.g i{background:var(--green)}
+.amp.y{color:var(--amber)}.amp.y i{background:#e09a1a}
+.amp.r{color:var(--red)}.amp.r i{background:var(--red)}
+.local{margin:18px 0 0;padding:14px 18px;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;font-weight:600}
+
+/* Begriff mit Infobox */
+.tw{position:relative;display:inline-block}
+.term{background:none;border:0;padding:0;font:inherit;font-weight:inherit;color:var(--accent);text-decoration:underline dotted;text-underline-offset:4px;display:inline-flex;align-items:center;gap:5px}
+.term .i{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;font-style:normal}
+.tip{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:min(360px,80vw);background:var(--ink);color:#fff;font-size:.9rem;font-weight:400;line-height:1.45;padding:12px 14px;border-radius:10px;box-shadow:var(--shadow)}
+.tw:hover .tip,.tw:focus-within .tip,.tw.open .tip{display:block}
+
+/* Schritt 3: A4-Karte */
+.a4{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 48px;max-width:860px;margin:0 auto}
+.a4-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.85rem;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:22px}
+.a4-head q{quotes:"\201E" "\201C"}
+.a4 h2.hl{font-size:1.9rem;line-height:1.2;margin:0 0 22px;letter-spacing:-.01em;color:var(--accent-ink)}
+.nb{white-space:nowrap}
+.facts{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.facts li{background:var(--accent-soft);border-radius:10px;padding:12px 14px;font-size:.95rem;line-height:1.4}
+.facts b{display:block;font-size:1.25rem;color:var(--accent-ink);margin-bottom:2px}
+.a4 h3{font-size:1.05rem;margin:22px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+td.num{text-align:right;white-space:nowrap}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+.tscroll{overflow-x:auto}
+.tomorrow{background:#f7f9fb;border-radius:10px;padding:14px 18px;margin-top:20px}
+.tomorrow h3{margin-top:0}
+.tomorrow p{margin:0}
+details{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:0}
+summary{cursor:pointer;padding:12px 16px;font-weight:600}
+details ul{margin:0;padding:0 16px 14px 36px;font-size:.92rem;color:var(--muted)}
+details li{margin:4px 0}
+.notice{margin-top:22px;padding:12px 16px;border-top:2px solid var(--amber);background:var(--amber-soft);font-size:.9rem;border-radius:0 0 8px 8px}
+.map{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fbfcfd}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.9rem;margin-top:8px;color:var(--muted)}
+.legend i{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px}
+.bars{display:grid;gap:8px;margin-top:4px}
+.bar{display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:10px;font-size:.92rem}
+.bar .track{height:18px;background:#eef1f4;border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar.low .fill{background:#c9d6e3}
+.bar .v{text-align:right;font-weight:600}
+.addr{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:.92rem;margin:0;padding-left:20px}
+
+/* Schritt 4 */
+.two{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;margin-top:20px}
+.getback{background:var(--green-soft);border-radius:10px;padding:14px 18px}
+.getback h3,.ds h3{margin:0 0 8px;font-size:1rem}
+.ds table{font-size:.92rem}
+.ds td:first-child{font-weight:600;white-space:nowrap;width:40%}
+.done{text-align:center;padding:48px 24px}
+.done .big{font-size:2.2rem;font-weight:800;color:var(--accent-ink);margin:0 0 8px}
+.done p{color:var(--muted);margin:0 0 24px}
+.check{width:72px;height:72px;border-radius:50%;background:var(--green-soft);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+
+/* Footer, Toast */
+.ftr{color:var(--muted);font-size:.85rem;text-align:center;padding:36px 0 28px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.sr{position:absolute;left:-9999px}
+
+/* Beamer 1280 */
+@media (min-width:1200px){html{font-size:19px}}
+
+/* Mobil */
+@media (max-width:860px){
+  html{font-size:17px}
+  .wrap{padding:0 16px}
+  .badge{margin-left:0;white-space:normal}
+  .grid3,.cols,.two,.facts{grid-template-columns:1fr}
+  .a4{padding:24px 20px}
+  .a4 h2.hl{font-size:1.6rem}
+  h1{font-size:1.6rem}
+  .prog button{font-size:.8rem;gap:6px}
+  .prog button .n{width:24px;height:24px}
+  .bar{grid-template-columns:90px 1fr 56px}
+  .addr{grid-template-columns:1fr}
+}
+@media (max-width:560px){.prog button span.l{display:none}.prog button.cur span.l{display:inline}}
+
+/* Druck */
+@page{size:A4;margin:16mm}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;font-size:12pt}
+  .hdr,.prog,.actions,.ftr,.toast,.lead,h1,.back{display:none!important}
+  .screen{display:none}
+  #s3{display:block}
+  .a4{box-shadow:none;border:0;padding:0;max-width:none}
+  .facts{grid-template-columns:repeat(3,1fr)}
+  details{border:0}
+  summary{padding-left:0}
+  .notice{background:none;border-top:1px solid #999}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="wrap">
+    <div class="brand">
+      <span class="name" id="brandName"></span>
+      <span class="claim">Fuhrpark-Fragen, mit Daten beantwortet.</span>
+    </div>
+    <div class="hdr-r">
+      <span class="badge">Konzept-Prototyp v2 · synthetische Beispieldaten · es wird nichts gesendet</span>
+      <button type="button" class="reset" id="resetTop">Neu starten</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <ol class="prog" aria-label="Fortschritt">
+    <li><button type="button" data-step="1"><span class="n">1</span><span class="l">Frage</span></button></li>
+    <li><button type="button" data-step="2"><span class="n">2</span><span class="l">Verstanden</span></button></li>
+    <li><button type="button" data-step="3"><span class="n">3</span><span class="l">Antwort</span></button></li>
+    <li><button type="button" data-step="4"><span class="n">4</span><span class="l">Zurückgeben</span></button></li>
+  </ol>
+
+  <!-- Schritt 1 -->
+  <section class="screen on" id="s1" aria-labelledby="h1-1">
+    <h1 id="h1-1" tabindex="-1">Ihre Frage</h1>
+    <p class="lead">Stellen Sie die Frage so, wie Sie sie einem Kollegen stellen würden.</p>
+    <div class="panel">
+      <label for="q">Was wollen Sie wissen?</label>
+      <textarea id="q" placeholder="Was wollen Sie über Ihren Fuhrpark wissen?" autocomplete="off"></textarea>
+      <p class="err" id="qerr" aria-live="polite"></p>
+      <p class="hint">Beispiele zum Einsetzen:</p>
+      <div class="chips" id="exChips">
+        <button type="button" class="chip" data-q="Lohnt sich ein E-Transporter für meine Touren?">Lohnt sich ein E-Transporter für meine Touren?</button>
+        <button type="button" class="chip" data-q="Wo dürfen meine Fahrzeuge in Mitte halten, ohne Knöllchen?">Wo dürfen meine Fahrzeuge in Mitte halten, ohne Knöllchen?</button>
+        <button type="button" class="chip" data-q="Brauche ich wirklich 6 Fahrzeuge?">Brauche ich wirklich 6 Fahrzeuge?</button>
+      </div>
+
+      <div class="grid3">
+        <div>
+          <label for="branche">Branche</label>
+          <select id="branche">
+            <option>SHK/Elektro</option><option>Gebäudereinigung</option><option>Bau/Tiefbau</option><option>Pflegedienst</option><option>Kurier/Logistik</option>
+            <option>Umzug</option><option>Catering</option><option>Taxi/Fahrdienst</option><option>Sonstiges</option>
+          </select>
+        </div>
+        <div>
+          <label for="n">Fahrzeuge</label>
+          <input type="number" id="n" min="1" max="200" value="6" inputmode="numeric">
+        </div>
+        <div>
+          <span class="hint" id="bezLabel" style="display:block;font-weight:600;color:var(--ink);font-size:.95rem;margin-bottom:6px">Einsatzgebiet (mehrere möglich)</span>
+          <div class="bez" id="bez" role="group" aria-labelledby="bezLabel"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="go1">Antwort vorbereiten</button>
+        <span class="hint">Enter im Textfeld genügt.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schritt 2 -->
+  <section class="screen" id="s2" aria-labelledby="h1-2">
+    <h1 id="h1-2" tabindex="-1">Verstanden</h1>
+    <p class="lead">So haben wir Ihre Frage gelesen. Stimmt das nicht, gehen Sie einen Schritt zurück.</p>
+    <div class="panel">
+      <p class="echo">Ihre Frage: <q id="echo"></q></p>
+      <p class="ctx" id="ctx"></p>
+
+      <div class="unknown" id="unknown" hidden>
+        <h2>Das haben wir noch nicht einsortiert.</h2>
+        <p>Meinten Sie eine dieser Fragen?</p>
+        <div class="choice" id="choice"></div>
+        <p class="hint">Wenn keine passt: Wir melden uns mit einer Antwort in 2 Werktagen (Demo). Es wird nichts gesendet.</p>
+      </div>
+
+      <div id="needs" hidden>
+        <h2 style="font-size:1.25rem;margin:0 0 14px">Was wir dafür brauchen</h2>
+        <div class="cols">
+          <div class="col">
+            <h3>Aus Ihrem Betrieb (bleibt bei Ihnen)</h3>
+            <div id="needOwn"></div>
+          </div>
+          <div class="col">
+            <h3>Aus dem <span class="tw"><button type="button" class="term" aria-describedby="tip1">Datenraum<span class="i" aria-hidden="true">i</span></button><span class="tip" role="tooltip" id="tip1">Mobility Data Space: ein gemeinnütziger Marktplatz, auf dem Firmen und Städte Daten sicher tauschen. Daten bleiben beim Anbieter.</span></span> und offenen Daten</h3>
+            <div id="needExt"></div>
+          </div>
+        </div>
+        <p class="local">Ihre Daten verlassen den Betrieb nicht. Gerechnet wird nur das Ergebnis.</p>
+        <div class="actions">
+          <button type="button" class="btn" id="go2">Mit Beispieldaten rechnen</button>
+          <button type="button" class="btn ghost back" data-back="1">Zurück zur Frage</button>
+        </div>
+      </div>
+      <div class="actions" id="unknownActions" hidden>
+        <button type="button" class="btn ghost back" data-back="1">Zurück zur Frage</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schritt 3 -->
+  <section class="screen" id="s3" aria-labelledby="h1-3">
+    <h1 id="h1-3" tabindex="-1">Antwort</h1>
+    <p class="lead">Eine Seite, zum Ausdrucken oder Weiterschicken.</p>
+    <article class="a4" id="card"></article>
+    <div class="actions" style="justify-content:center">
+      <button type="button" class="btn" id="printBtn">Als PDF drucken</button>
+      <button type="button" class="btn sec" id="waBtn">Per WhatsApp senden (Demo)</button>
+      <button type="button" class="btn sec" id="go3">Weiter: Zurückgeben (optional)</button>
+      <button type="button" class="btn ghost back" data-back="2">Zurück</button>
+    </div>
+  </section>
+
+  <!-- Schritt 4 -->
+  <section class="screen" id="s4" aria-labelledby="h1-4">
+    <h1 id="h1-4" tabindex="-1">Zurückgeben (optional)</h1>
+    <p class="lead">Freiwillig, aggregiert, über eine Stelle, der Sie ohnehin vertrauen.</p>
+    <div class="panel" id="s4form">
+      <p style="margin:0 0 6px;font-size:1.1rem">Ihre Antwort hilft auch anderen Betrieben. Über Ihre Innung oder Ihren Verband können aggregierte Werte (ohne Zeit, Adresse, Person) in den <span class="tw"><button type="button" class="term" aria-describedby="tip2">Datenraum<span class="i" aria-hidden="true">i</span></button><span class="tip" role="tooltip" id="tip2">Mobility Data Space: ein gemeinnütziger Marktplatz, auf dem Firmen und Städte Daten sicher tauschen. Daten bleiben beim Anbieter.</span></span> fließen. Dafür bekommen Sie ein Dokument, das Sie brauchen.</p>
+      <div class="two">
+        <div>
+          <label for="via">Über wen?</label>
+          <select id="via">
+            <option>Innung/Handwerkskammer</option><option>Verband</option><option>Leitstelle</option><option>gar nicht</option>
+          </select>
+          <div class="getback" style="margin-top:16px">
+            <h3>Was Sie zurückbekommen</h3>
+            <p id="getback" style="margin:0"></p>
+          </div>
+        </div>
+        <div class="ds">
+          <h3>Datenschutz-Label</h3>
+          <table>
+            <tbody>
+              <tr><td>Verlässt den Betrieb</td><td id="dsOut">nur Zähler pro Bezirk und Woche</td></tr>
+              <tr><td>Verlässt den Betrieb nie</td><td>Adressen, Zeiten, Fahrer, Kunden</td></tr>
+              <tr><td>Wer rechnet</td><td id="dsWho">Ihre Innung oder Ihr Verband, zusammen mit mindestens 10 Betrieben</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="go4">Beitrag vormerken (Demo)</button>
+        <button type="button" class="btn ghost back" data-back="3">Zurück zur Antwort</button>
+      </div>
+    </div>
+    <div class="panel done" id="s4done" hidden>
+      <div class="check" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1e7a46" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 7"/></svg></div>
+      <p class="big" id="doneHl">Vorgemerkt. Nichts wurde gesendet.</p>
+      <p id="doneSub">In der echten Version bekommen Sie eine Bestätigung von Ihrer Innung oder Ihrem Verband, bevor irgendetwas fließt.</p>
+      <button type="button" class="btn" id="newQ">Neue Frage</button>
+    </div>
+  </section>
+</main>
+
+<footer class="ftr" id="ftr"></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  const PRODUCT_NAME = "Fuhrwerk"; // einzige Stelle, an der der Produktname steht
+  var $ = function(id){ return document.getElementById(id); };
+  document.title = PRODUCT_NAME + ' · Fuhrpark-Fragen, mit Daten beantwortet.';
+  $('brandName').textContent = PRODUCT_NAME;
+  $('ftr').textContent = PRODUCT_NAME + ' · Konzept-Prototyp v2 · Team 1, CODE University Berlin · keine Rechtsberatung';
+  var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  var BEZIRKE = ['Mitte','Friedrichshain-Kreuzberg','Pankow','Charlottenburg-Wilmersdorf','Spandau','Steglitz-Zehlendorf','Tempelhof-Schöneberg','Neukölln','Treptow-Köpenick','Marzahn-Hellersdorf','Lichtenberg','Reinickendorf'];
+  var ZONEN_OK = ['Mitte','Friedrichshain-Kreuzberg'];
+
+  var state = { question:'', flow:null, branche:'SHK/Elektro', n:6, bez:['Mitte'], step:1, max:1 };
+
+  /* ---------- Erkennung: deutsche Stichwörter ---------- */
+  // Eigene Wortgrenze, weil \b Umlaute nicht kennt.
+  var B = '(^|[^a-zäöüß])', E = '(?=$|[^a-zäöüß])';
+  function rx(list){ return list.map(function(p){ return new RegExp(B + p + E); }); }
+  var KEYS = {
+    A: rx(['e-?transporter','elektrisch(e[rsn]?)?','elektro','(auf)?laden','ladesäulen?','reichweite','e-?autos?','e-?fahrzeuge?','strom','akku','batterie']),
+    B: rx(['halten','parken','halteverbot','lieferzonen?','ladezonen?','knöllchen','parkplatz','parkplätze','stehen','strafzettel','parkraum','anhalten']),
+    C: rx(['fahrzeuge zu viel','zu viele fahrzeuge','auslastung','ausgelastet','brauche ich','brauchen wir','wie viele','abschaffen','weniger','zu viel'])
+  };
+  function detect(q){
+    var t = ' ' + q.toLowerCase().replace(/\s+/g,' ').trim() + ' ';
+    var best = null, bestN = 0;
+    ['A','B','C'].forEach(function(k){
+      var n = 0;
+      KEYS[k].forEach(function(r){ if (r.test(t)) n++; });
+      if (n > bestN){ bestN = n; best = k; }
+    });
+    return best; // null = nicht einsortiert
+  }
+
+  /* ---------- Inhalte je Flow ---------- */
+  function zonenRow(){
+    return ['r','Lieferzonen und Halteverbote','kein Datensatz vorhanden, weder offen noch im Datenraum (Stand 10/2026). Näherung über Parkzonen (Senatsverwaltung, offen). Die Lücke schließen Betriebe gemeinsam in Schritt 4.'];
+  }
+  var FLOWS = {
+    A: {
+      label: 'Lohnt sich ein E-Transporter für meine Touren?',
+      needsOwn: function(){ return [
+        ['g','Tourenliste oder Kalender-Export','Ihr Kalender oder Ihre Dispo, als Datei, letzte 4 Wochen'],
+        ['g','Tankkarten-Abrechnung','Monatsabrechnung Ihres Tankkartenanbieters, letzte 3 Monate']
+      ]; },
+      needsExt: function(){ return [
+        ['g','Ladesäulen Berlin','Bundesnetzagentur Ladesäulenregister, offen, monatlich, alle Bezirke, kostenlos'],
+        zonenRow(),
+        ['g','Baustellen','VIZ Berlin, offen, täglich, alle Bezirke, kostenlos'],
+        ['y','Winter-Reichweitenfaktor','Herstellerangabe, Beispiel, jährlich, kostenlos']
+      ]; },
+      getback: 'Ladebedarfskarte Gewerbe für Ihren Bezirk (Zahlen aus 40 Betrieben), als Argument gegenüber Bezirk und Netzbetreiber.',
+      dsOut: 'nur Zähler pro Bezirk und Woche: Touren elektrisch fahrbar ja/nein, Ladebedarf in kWh-Klassen'
+    },
+    B: {
+      label: 'Wo dürfen meine Fahrzeuge in Mitte halten, ohne Knöllchen?',
+      needsOwn: function(){ return [
+        ['g','Adressliste der häufigsten Kunden','aus Ihrer Rechnungs- oder Einsatzsoftware, Export als Datei'],
+        ['y','Knöllchen der letzten 12 Monate','falls vorhanden, als Excel oder Ordner; sonst schätzen wir']
+      ]; },
+      needsExt: function(){ var z = zonenRow(); z[1] = 'Lieferzonen und Halteverbote je Bezirk'; return [
+        z,
+        ['g','Parkraumbewirtschaftung','Senatsverwaltung Berlin, offen, Stand 2026, alle Bezirke, kostenlos'],
+        ['g','Baustellen','VIZ Berlin, offen, täglich, alle Bezirke, kostenlos'],
+        ['y','Handwerkerparkausweis, Bedingungen','Bezirksämter, Beispiel, jährlich, Gebühr 50 bis 200 € pro Fahrzeug']
+      ]; },
+      getback: 'Lieferzonen-Argument für den Bezirk (Zahlen aus 40 Betrieben), als Vorlage für Innung oder Verband gegenüber dem Bezirksamt.',
+      dsOut: 'nur Zähler pro Bezirk und Woche: Halte-Vorgänge in Klassen, Anteil mit Ladezone in 150 m'
+    },
+    C: {
+      label: 'Brauche ich wirklich 6 Fahrzeuge?',
+      needsOwn: function(){ return [
+        ['g','Kalender oder Tourenliste','Ihr Kalender oder Ihre Dispo, als Datei, letzte 4 Wochen'],
+        ['y','Fahrtenbuch oder Tankkarte','eines von beiden reicht; ohne beides schätzen wir die Kilometer']
+      ]; },
+      needsExt: function(){ return [
+        ['g','Verkehrslage und Fahrzeiten je Tageszeit','VIZ Berlin, offen, alle 15 Minuten, alle Bezirke, kostenlos'],
+        ['y','Vollkosten-Richtwerte Transporter','Verbandsdaten, Beispiel, jährlich, 0 bis 80 € pro Abruf'],
+        ['g','Baustellen','VIZ Berlin, offen, täglich, alle Bezirke, kostenlos']
+      ]; },
+      getback: 'Fahrzeug-Richtwert je Branche und Bezirk (Zahlen aus 40 Betrieben), als Vergleich: Wie viele Fahrzeuge haben Betriebe Ihrer Größe?',
+      dsOut: 'nur Zähler pro Bezirk und Woche: Fahrzeuge je 10 Touren, Auslastung in Klassen'
+    }
+  };
+
+  /* ---------- Hilfen ---------- */
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+  function amp(s){
+    var txt = {g:'verfügbar', y:'teilweise', r:'fehlt'}[s];
+    return '<span class="amp ' + s + '"><i aria-hidden="true"></i>' + txt + '</span>';
+  }
+  function needRows(rows){
+    return rows.map(function(r){
+      return '<div class="need">' + amp(r[0]) + '<span class="t">' + esc(r[1]) + '</span><span class="d">' + esc(r[2]) + '</span></div>';
+    }).join('');
+  }
+  function today(){ return new Date().toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}); }
+  function bezText(){ return state.bez.length ? state.bez.join(', ') : 'Berlin'; }
+  function firstBez(){ return state.bez[0] || 'Mitte'; }
+
+  /* ---------- Navigation ---------- */
+  function goStep(k, focus){
+    state.step = k; if (k > state.max) state.max = k;
+    [1,2,3,4].forEach(function(i){ $('s' + i).classList.toggle('on', i === k); });
+    document.querySelectorAll('.prog button').forEach(function(b){
+      var i = +b.dataset.step;
+      b.classList.toggle('cur', i === k);
+      b.classList.toggle('done', i < k);
+      b.disabled = !(i < k);
+      b.setAttribute('aria-current', i === k ? 'step' : 'false');
+    });
+    window.scrollTo(0,0);
+    if (focus !== false) $('h1-' + k).focus();
+  }
+
+  /* ---------- Schritt 1 ---------- */
+  function renderBez(){
+    $('bez').innerHTML = BEZIRKE.map(function(b){
+      return '<button type="button" class="chip" data-bez="' + esc(b) + '" aria-pressed="' + (state.bez.indexOf(b) >= 0) + '">' + esc(b) + '</button>';
+    }).join('');
+  }
+  renderBez();
+  $('bez').addEventListener('click', function(e){
+    var b = e.target.closest('[data-bez]'); if (!b) return;
+    var v = b.dataset.bez, i = state.bez.indexOf(v);
+    if (i >= 0) state.bez.splice(i,1); else state.bez.push(v);
+    b.setAttribute('aria-pressed', i < 0);
+  });
+  $('exChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-q]'); if (!b) return;
+    $('q').value = b.dataset.q; $('qerr').textContent = '';
+    document.querySelectorAll('#exChips .chip').forEach(function(c){ c.setAttribute('aria-pressed', c === b); });
+    $('q').focus();
+  });
+  $('q').addEventListener('input', function(){
+    document.querySelectorAll('#exChips .chip').forEach(function(c){ c.setAttribute('aria-pressed', c.dataset.q === $('q').value); });
+  });
+  $('q').addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submit1(); }
+  });
+  $('go1').addEventListener('click', submit1);
+
+  function submit1(){
+    var q = $('q').value.trim();
+    if (!q){ $('qerr').textContent = 'Bitte geben Sie eine Frage ein oder wählen Sie ein Beispiel.'; $('q').focus(); return; }
+    state.question = q;
+    state.branche = $('branche').value;
+    state.n = Math.max(1, Math.min(200, parseInt($('n').value, 10) || 6));
+    state.flow = detect(q);
+    renderStep2();
+    goStep(2);
+  }
+
+  /* ---------- Schritt 2 ---------- */
+  function renderStep2(){
+    $('echo').textContent = state.question;
+    $('ctx').textContent = 'Ihr Betrieb: ' + state.branche + ', ' + state.n + ' Fahrzeug' + (state.n === 1 ? '' : 'e') + ', Einsatzgebiet ' + bezText() + '.';
+    var known = !!state.flow;
+    $('unknown').hidden = known;
+    $('unknownActions').hidden = known;
+    $('needs').hidden = !known;
+    if (!known){
+      $('choice').innerHTML = ['A','B','C'].map(function(k){
+        return '<button type="button" data-flow="' + k + '" aria-pressed="false">' + esc(FLOWS[k].label) + '</button>';
+      }).join('');
+    } else {
+      renderNeeds();
+    }
+  }
+  function renderNeeds(){
+    var f = FLOWS[state.flow];
+    $('needOwn').innerHTML = needRows(f.needsOwn());
+    $('needExt').innerHTML = needRows(f.needsExt());
+  }
+  $('choice').addEventListener('click', function(e){
+    var b = e.target.closest('[data-flow]'); if (!b) return;
+    state.flow = b.dataset.flow;
+    document.querySelectorAll('#choice button').forEach(function(c){ c.setAttribute('aria-pressed', c === b); });
+    renderNeeds();
+    $('needs').hidden = false;
+    $('unknownActions').hidden = true;
+    $('go2').focus();
+  });
+  $('go2').addEventListener('click', function(){ renderStep3(); goStep(3); });
+
+  /* ---------- Schritt 3 ---------- */
+  function head(){
+    return '<header class="a4-head"><span>' + esc(PRODUCT_NAME) + ' · Antwort vom ' + today() + ' · ' + esc(state.branche) + ', ' + state.n + ' Fahrzeuge, ' + esc(bezText()) + '</span><span>Frage: <q>' + esc(state.question) + '</q></span></header>';
+  }
+  function facts(list){
+    return '<ul class="facts">' + list.map(function(f){ return '<li><b>' + esc(f[0]) + '</b>' + esc(f[1]) + '</li>'; }).join('') + '</ul>';
+  }
+  function tomorrow(t){ return '<section class="tomorrow"><h3>Was morgen anders läuft</h3><p>' + t + '</p></section>'; }
+  function sources(list){
+    return '<details id="src"><summary>Woher die Zahlen kommen</summary><ul>' + list.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></details>';
+  }
+  function notice(t){ return '<div class="notice">' + t + '</div>'; }
+  var NOTICE_A = 'Beispielrechnung mit synthetischen Tourendaten. In der echten Version aus Ihrem Kalender-Export, der bei Ihnen bleibt.';
+
+  function cardA(){
+    var tours = [
+      ['Tour 1, Nord', 62, true, 'passt auch im Winter'],
+      ['Tour 2, Wedding', 48, true, 'passt auch im Winter'],
+      ['Tour 3, Moabit', 55, true, 'passt auch im Winter'],
+      ['Tour 4, Spandau', 165, false, 'nur mit Schnellladung unterwegs, 2 Säulen in 800 m'],
+      ['Tour 5, Prenzlauer Berg', 44, true, 'passt auch im Winter'],
+      ['Tour 6, Tiergarten', 38, true, 'passt auch im Winter'],
+      ['Tour 7, Köpenick', 172, false, 'nur mit Schnellladung unterwegs, 2 Säulen in 800 m'],
+      ['Tour 8, Kreuzberg', 70, true, 'passt auch im Winter'],
+      ['Tour 9, Neukölln', 81, true, 'im Winter knapp, Ladefenster am Depot reicht']
+    ];
+    var rows = tours.map(function(t){
+      return '<tr><td>' + esc(t[0]) + '</td><td class="num">' + t[1] + ' km</td><td class="' + (t[2] ? 'yes' : 'no') + '">' + (t[2] ? 'Ja' : 'Nein') + '</td><td>' + esc(t[3]) + '</td></tr>';
+    }).join('');
+    return head() +
+      '<h2 class="hl">7 von 9 Touren fahren mit einem <span class="nb">E-Transporter</span>. 2 Touren brauchen unterwegs eine Schnellladesäule.</h2>' +
+      facts([['180 km', 'Reichweite angenommen, im Winter 140 km'], ['Mo bis Fr 12:30 bis 13:15', 'Ladefenster am Depot, reicht für alle 7 Touren'], ['Touren 4 und 7', 'je 2 Schnellladesäulen innerhalb 800 m vom Kunden (Beispiel)']]) +
+      '<h3>Alle 9 Touren im Einzelnen</h3><div class="tscroll"><table><thead><tr><th>Tour</th><th>Strecke</th><th>Elektrisch</th><th>Hinweis</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      tomorrow('Sie können 7 Touren ab dem ersten Tag elektrisch fahren und laden mittags am Depot. Für Tour 4 und 7 planen Sie 25 Minuten Ladezeit beim Kunden ein oder lassen diese beiden vorerst beim Diesel.') +
+      sources(['Tourendaten: synthetisch, 9 Touren eines Beispielbetriebs (' + state.branche + ', ' + state.n + ' Fahrzeuge), nicht Ihre Daten',
+        'Ladesäulen: Bundesnetzagentur Ladesäulenregister, Stand 30.09.2026, monatlich, CC BY 4.0',
+        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, täglich, Datenlizenz Deutschland Namensnennung 2.0',
+        'Lieferzonen und Halteverbote: kein öffentlicher Datensatz (Stand 10/2026), Annahmen als Beispiel',
+        'Reichweite 180 km, Winterfaktor 0,78: Herstellerangabe, Beispiel']) +
+      notice(NOTICE_A);
+  }
+
+  function cardB(){
+    var bz = firstBez();
+    var pts = [
+      [90,70,1,'A'],[210,60,1,'B'],[330,80,1,'C'],[450,70,0,'D'],
+      [80,160,1,'E'],[200,150,0,'F'],[320,170,1,'G'],[440,160,1,'H'],
+      [100,250,1,'I'],[220,240,1,'J'],[340,250,0,'K'],[460,240,0,'L']
+    ];
+    var grid = '';
+    for (var x = 40; x <= 520; x += 60) grid += '<line x1="' + x + '" y1="20" x2="' + x + '" y2="290" stroke="#dfe5eb"/>';
+    for (var y = 30; y <= 290; y += 65) grid += '<line x1="20" y1="' + y + '" x2="540" y2="' + y + '" stroke="#dfe5eb"/>';
+    var dots = pts.map(function(p){
+      var ok = p[2] === 1;
+      return (ok ? '<rect x="' + (p[0]-22) + '" y="' + (p[1]-14) + '" width="44" height="28" rx="6" fill="#e4f3ea" stroke="#1e7a46" stroke-dasharray="3 2"/>' : '') +
+        '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="' + (ok ? '#1e7a46' : '#b23a30') + '"/>' +
+        '<text x="' + p[0] + '" y="' + (p[1]+4) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">' + p[3] + '</text>';
+    }).join('');
+    var svg = '<svg class="map" viewBox="0 0 560 300" role="img" aria-label="Schematische Karte: 12 Adressen, 8 mit Ladezone innerhalb 150 Meter grün, 4 ohne rot. Schematisch, nicht die echte Karte.">' +
+      '<rect width="560" height="300" fill="#fbfcfd"/>' + grid +
+      '<rect x="40" y="95" width="480" height="8" fill="#cfd8e0"/><rect x="40" y="200" width="480" height="8" fill="#cfd8e0"/><rect x="265" y="20" width="8" height="270" fill="#cfd8e0"/>' +
+      dots + '<text x="540" y="292" text-anchor="end" font-size="11" fill="#5b6672">schematisch, nicht die echte Karte</text></svg>';
+    return head() +
+      '<h2 class="hl">Von Ihren 12 häufigsten Adressen in ' + esc(bz) + ' haben 8 eine Ladezone innerhalb 150 m, 4 nicht.</h2>' +
+      facts([['3 Adressen', 'darauf konzentriert sich Ihr Knöllchen-Risiko (D, K, L)'], ['180 € pro Monat', 'geschätzte Ersparnis, wenn Sie dort anders halten (Beispiel)'], ['2 Adressen', 'Ausnahmegenehmigung Handwerkerparken möglich (F, K)']]) +
+      '<h3>Ihre 12 Adressen, schematisch</h3>' + svg +
+      '<div class="legend"><span><i style="background:#1e7a46"></i>Ladezone innerhalb 150 m (8)</span><span><i style="background:#b23a30"></i>keine Ladezone in 150 m (4)</span></div>' +
+      '<h3>Die 4 ohne Ladezone</h3><ul class="addr"><li>D: nächste Ladezone 310 m, Halteverbot ganztags</li><li>F: Ausnahmegenehmigung möglich, Antrag beim Bezirksamt</li><li>K: Ausnahmegenehmigung möglich, Baustelle bis Dezember</li><li>L: Parkraumbewirtschaftung, 2 Stunden mit Ticket erlaubt</li></ul>' +
+      tomorrow('Bei A, B, C, E, G, H, I und J halten Ihre Fahrer ab morgen in der markierten Ladezone, nicht davor. Für F und K stellen Sie den Antrag auf Handwerkerparken, für D und L planen Sie 5 Minuten Fußweg ein.') +
+      sources(['Adressdaten: synthetisch, 12 Beispieladressen in ' + bz + ', nicht Ihre Daten',
+        'Lieferzonen und Halteverbote: kein öffentlicher Datensatz für ' + bz + ' (Stand 10/2026), Annahmen als Beispiel',
+        'Parkzonen: Senatsverwaltung für Mobilität, Stand 30.09.2026, Datenlizenz Deutschland Zero 2.0',
+        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, täglich, Datenlizenz Deutschland Namensnennung 2.0',
+        'Knöllchen 55 € je Vorgang, Ersparnis aus 3,3 Vorgängen pro Monat: Bußgeldkatalog 2026, Beispielrechnung']) +
+      notice('Beispielrechnung mit synthetischen Adressdaten. In der echten Version aus Ihrer Kundenliste, die bei Ihnen bleibt.');
+  }
+
+  function cardC(){
+    var n = Math.max(2, state.n), m = n - 1;
+    var base = [82, 76, 71, 64, 58, 31, 77, 69, 62, 54, 48, 36];
+    var show = Math.min(n, 12);
+    var bars = '';
+    for (var i = 0; i < show; i++){
+      var v = base[i % base.length] - (i >= 12 ? 5 : 0);
+      bars += '<div class="bar' + (v < 40 ? ' low' : '') + '"><span>Fahrzeug ' + (i+1) + '</span><div class="track"><div class="fill" style="width:' + v + '%"></div></div><span class="v">' + v + ' %</span></div>';
+    }
+    if (n > 12) bars += '<p class="hint">Es werden 12 von ' + n + ' Fahrzeugen gezeigt.</p>';
+    return head() +
+      '<h2 class="hl">Mit ' + m + ' statt ' + n + ' Fahrzeugen schaffen Sie Mo bis Fr alle Touren, außer Mittwoch 9 bis 11 Uhr (2 Überlappungen).</h2>' +
+      facts([['ca. 7.500 € pro Jahr', 'Vollkosten je Fahrzeug: Leasing, Versicherung, Wartung, Steuer (Beispiel)'], ['Mittwoch 9 bis 11 Uhr', 'lösbar durch Tourentausch: Tour 3 startet 8:15 statt 9:00'], ['Fahrzeug ' + n, 'nur zu ' + (base[Math.min(n,12)-1]) + ' % ausgelastet, in 4 Wochen 9 Tage ungenutzt']]) +
+      '<h3>Auslastung je Fahrzeug, Mo bis Fr, 7 bis 18 Uhr (letzte 4 Wochen)</h3><div class="bars">' + bars + '</div>' +
+      tomorrow('Sie lassen Fahrzeug ' + n + ' vier Wochen stehen und fahren alle Touren mit ' + m + '. Am Mittwoch startet Tour 3 um 8:15. Wenn in den vier Wochen nichts liegen bleibt, geben Sie das Leasing zurück.') +
+      sources(['Tourendaten: synthetisch, 4 Wochen eines Beispielbetriebs (' + state.branche + ', ' + n + ' Fahrzeuge), nicht Ihre Daten',
+        'Fahrzeiten je Tageszeit: VIZ Berlin Verkehrslage, Stand 20.10.2026, alle 15 Minuten, CC BY 3.0 DE',
+        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, täglich, Datenlizenz Deutschland Namensnennung 2.0',
+        'Vollkosten 7.500 € pro Jahr für einen Transporter bis 3,5 t: Verbandsrichtwert, Beispiel']) +
+      notice(NOTICE_A);
+  }
+
+  function renderStep3(){
+    var html = state.flow === 'A' ? cardA() : state.flow === 'B' ? cardB() : cardC();
+    $('card').innerHTML = html;
+  }
+  $('printBtn').addEventListener('click', function(){ window.print(); });
+  window.addEventListener('beforeprint', function(){ var d = $('src'); if (d) d.open = true; });
+  $('waBtn').addEventListener('click', function(){ toast('Demo: nichts gesendet.'); });
+  $('go3').addEventListener('click', function(){ renderStep4(); goStep(4); });
+
+  /* ---------- Schritt 4 ---------- */
+  function renderStep4(){
+    var f = FLOWS[state.flow];
+    var via = (state.branche === 'SHK/Elektro' || state.branche === 'Gebäudereinigung' || state.branche === 'Bau/Tiefbau') ? 'Innung/Handwerkskammer' : state.branche === 'Taxi/Fahrdienst' ? 'Leitstelle' : 'Verband';
+    $('via').value = via;
+    $('getback').textContent = f.getback;
+    $('dsOut').textContent = f.dsOut;
+    updateVia();
+    $('s4form').hidden = false; $('s4done').hidden = true;
+  }
+  function updateVia(){
+    var v = $('via').value;
+    $('dsWho').textContent = v === 'gar nicht' ? 'niemand, es fließt nichts' : v + ', zusammen mit mindestens 10 Betrieben';
+    $('go4').textContent = v === 'gar nicht' ? 'Ohne Beitrag abschließen' : 'Beitrag vormerken (Demo)';
+  }
+  $('via').addEventListener('change', updateVia);
+  $('go4').addEventListener('click', function(){
+    var none = $('via').value === 'gar nicht';
+    $('doneHl').textContent = none ? 'Kein Beitrag. Nichts wurde gesendet.' : 'Vorgemerkt. Nichts wurde gesendet.';
+    $('doneSub').textContent = none ? 'Ihre Antwort bleibt bei Ihnen. Sie können jederzeit eine neue Frage stellen.' : 'In der echten Version bekommen Sie eine Bestätigung von ' + $('via').value + ', bevor irgendetwas fließt.';
+    $('s4form').hidden = true; $('s4done').hidden = false;
+    $('doneHl').setAttribute('tabindex','-1'); $('doneHl').focus();
+  });
+
+  /* ---------- Reset, Zurück, Fortschritt ---------- */
+  function reset(){
+    state.question = ''; state.flow = null; state.max = 1;
+    $('q').value = ''; $('qerr').textContent = '';
+    document.querySelectorAll('#exChips .chip').forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+    $('card').innerHTML = '';
+    goStep(1, false); $('q').focus();
+  }
+  $('resetTop').addEventListener('click', reset);
+  $('newQ').addEventListener('click', reset);
+  document.querySelectorAll('.back').forEach(function(b){ b.addEventListener('click', function(){ goStep(+b.dataset.back); }); });
+  document.querySelectorAll('.prog button').forEach(function(b){ b.addEventListener('click', function(){ if (!b.disabled) goStep(+b.dataset.step); }); });
+
+  /* Infobox: per Klick auch auf Touch-Geräten */
+  document.querySelectorAll('.term').forEach(function(t){
+    t.addEventListener('click', function(e){ e.stopPropagation(); t.parentNode.classList.toggle('open'); });
+  });
+  document.addEventListener('click', function(){ document.querySelectorAll('.tw.open').forEach(function(w){ w.classList.remove('open'); }); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') document.querySelectorAll('.tw.open').forEach(function(w){ w.classList.remove('open'); }); });
+
+  goStep(1, false);
+})();
+</script>
+</body>
+</html>
