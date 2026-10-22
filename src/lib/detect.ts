@@ -34,6 +34,6 @@ export const FLOW_LABEL: Record<Flow, string> = {
 
 export const FLOW_INTENT: Record<Flow, string> = {
   A: 'Elektrifizierung: Welche Ihrer Touren fahren mit einem E-Transporter, auch im Winter?',
-  B: 'Halten und Parken: Wo stehen Ihre Fahrzeuge beim Kunden ohne Bußgeld?',
+  B: 'Halten und Parken: Wo stehen Fahrzeuge beim Kunden ohne Bußgeld? In dieser Version mit Beispieladressen.',
   C: 'Fuhrparkgröße: Wie viele Fahrzeuge brauchen Sie für Ihre Touren wirklich?',
 }

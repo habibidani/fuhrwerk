@@ -168,7 +168,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
                 </label>
                 <label className="grid gap-1 text-sm">
                   Fahrzeuge
-                  <input type="number" min={1} max={60} className="field" value={profile.vehicles} onChange={(e) => setProfile({ ...profile, vehicles: Math.max(1, Math.min(60, Number(e.target.value) || 1)) })} />
+                  <input type="number" min={1} max={60} className="field" value={profile.vehicles} onChange={(e) => setProfile({ ...profile, vehicles: Number(e.target.value) })} onBlur={(e) => setProfile({ ...profile, vehicles: Math.max(1, Math.min(60, Number(e.target.value) || 1)) })} />
                 </label>
                 <fieldset>
                   <legend className="text-sm mb-1">Bezirke, in denen Sie meist unterwegs sind</legend>
@@ -195,7 +195,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
         <section aria-labelledby="h2">
           <Label>02 · Verstanden</Label>
           <h1 id="h2" ref={h1Ref} tabIndex={-1} className="text-3xl sm:text-4xl font-semibold mt-2 mb-2 outline-none">
-            {unknown ? 'Diese Frage kann ich noch nicht beantworten.' : 'So habe ich Ihre Frage verstanden.'}
+            {unknown ? 'Diese Frage kann Fuhrwerk noch nicht beantworten.' : 'So hat Fuhrwerk Ihre Frage verstanden.'}
           </h1>
           <p className="text-lg mb-6">
             Ihre Frage: <q className="italic">{question.trim()}</q>

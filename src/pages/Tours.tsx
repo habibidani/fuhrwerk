@@ -26,7 +26,7 @@ export default function Tours({ tours, setTours, profile }: Props) {
   const add = () => {
     if (!draft.name.trim()) return setErr('Bitte einen Namen für die Tour eintragen, zum Beispiel „Tour Nord“.')
     if (draft.km <= 0 || draft.km > 600) return setErr('Strecke zwischen 1 und 600 km.')
-    if (draft.start >= draft.end) return setErr('Ende muss nach dem Start liegen.')
+    if (draft.start === draft.end) return setErr('Start und Ende dürfen nicht gleich sein. Nachttouren über Mitternacht sind erlaubt (z. B. 22:00 bis 02:00).')
     if (draft.days.length === 0) return setErr('Mindestens einen Wochentag wählen.')
     setErr('')
     setTours((t) => [...t, { ...draft, id: uid(), name: draft.name.trim() }])
@@ -68,14 +68,14 @@ export default function Tours({ tours, setTours, profile }: Props) {
               {BEZIRKE.map((b) => <option key={b}>{b}</option>)}
             </select>
           </label>
-          <label className="grid gap-1 text-sm">Strecke pro Tag, hin und zurück (km)<input type="number" className="field" min={1} max={600} value={draft.km} onChange={(e) => setDraft({ ...draft, km: Number(e.target.value) })} /></label>
+          <label className="grid gap-1 text-sm">Strecke pro Tag, hin und zurück (km)<input type="number" className="field" min={1} max={600} inputMode="numeric" value={draft.km} onChange={(e) => setDraft({ ...draft, km: Number(e.target.value) })} /></label>
           <div className="grid grid-cols-2 gap-3">
             <label className="grid gap-1 text-sm">Start<input type="time" className="field" value={draft.start} onChange={(e) => setDraft({ ...draft, start: e.target.value })} /></label>
             <label className="grid gap-1 text-sm">Ende<input type="time" className="field" value={draft.end} onChange={(e) => setDraft({ ...draft, end: e.target.value })} /></label>
           </div>
           <fieldset>
             <legend className="text-sm mb-1">Wochentage</legend>
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {WEEKDAYS.map((d) => <button key={d} type="button" className="chip text-xs" aria-pressed={draft.days.includes(d)} onClick={() => toggleDay(d)}>{d}</button>)}
             </div>
           </fieldset>

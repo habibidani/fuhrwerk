@@ -16,7 +16,7 @@ export default function Sources() {
       <Label>Datenquellen · Stand 22.10.2026</Label>
       <h1 className="text-3xl sm:text-4xl font-semibold mt-2 mb-2">Woher die Zahlen kommen, und wo noch Lücken sind.</h1>
       <p className="text-alu mb-6">
-        {counts['offen'] ?? 0} offene Quellen, {counts['datenraum'] ?? 0} nur im Datenraum, {counts['luecke'] ?? 0} Lücke, {counts['beispiel'] ?? 0} Beispielwerte. Was gelb markiert ist, wird in der nächsten Version durch echte Daten ersetzt.
+        {counts['offen'] ?? 0} offene Quellen, {counts['datenraum'] ?? 0} nur im Datenraum, {counts['luecke'] ?? 0} Lücke, {counts['beispiel'] ?? 0} Beispielwerte. Was grün markiert ist, wird in der nächsten Version durch echte Daten ersetzt.
       </p>
       <ul className="flex flex-wrap gap-4 mb-6 label">
         {(Object.keys(KIND_LABEL) as SourceKind[]).map((k) => (
@@ -45,7 +45,7 @@ export default function Sources() {
       </div>
       <div className="card-dark mt-6">
         <Label className="text-nitro mb-1">Unser Weg in den Mobility Data Space</Label>
-        <p className="text-sm leading-snug">Mitgliedschaft, dann ein EDC-Connector oder Connector-as-a-Service, dann Angebot im Katalog finden (11 Kategorien, Mobilithek gespiegelt), Vertrag gegen die Nutzungsbedingungen des Anbieters verhandeln (oft manuelle Freigabe), Übertragung Connector zu Connector. Die Daten bleiben beim Anbieter. Stand heute: Connector-Set-up begonnen, noch kein Katalogzugriff. Jede Hürde wird dokumentiert.</p>
+        <p className="text-sm leading-snug">Mitgliedschaft, dann ein EDC-Connector oder Connector-as-a-Service über MDS-Partner, dann Angebot im Katalog finden (11 Kategorien, Mobilithek-Angebote über den Katalog vermittelt), Vertrag gegen die Nutzungsbedingungen des Anbieters verhandeln (oft manuelle Freigabe), Übertragung Connector zu Connector. Die Daten bleiben beim Anbieter. Stand heute: Connector-Set-up begonnen, noch kein Katalogzugriff. Jede Hürde wird dokumentiert.</p>
       </div>
     </div>
   )

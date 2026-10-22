@@ -42,16 +42,17 @@ export default function AnswerCard(p: Props) {
         : `${ja} von ${rows.length} Touren ${ja === 1 ? 'fährt' : 'fahren'} mit einem E-Transporter. ${nein} ${nein === 1 ? 'Tour braucht' : 'Touren brauchen'} unterwegs eine Schnellladesäule.`)
     }
     if (result.kind === 'C') {
-      const { n, needed, spare, overlaps, shortSpike } = result.r
+      const { n, needed, spare, missing, overlaps, shortSpike } = result.r
       const spike = shortSpike && overlaps.length && overlaps[0].count > needed ? overlaps[0] : null
-      if (spare === 0) return prefix + `Sie brauchen alle ${n} Fahrzeuge: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} ${needed === 1 ? 'läuft 1 Tour' : `laufen ${needed} Touren`} gleichzeitig.`
+      if (missing > 0) return prefix + `Ihnen ${missing === 1 ? 'fehlt 1 Fahrzeug' : `fehlen ${missing} Fahrzeuge`}: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} laufen ${needed} Touren gleichzeitig, Sie haben ${n}.`
+      if (spare === 0) return prefix + (n === 1 ? `Ihr Fahrzeug wird gebraucht: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} läuft eine Tour.` : `Sie brauchen alle ${n} Fahrzeuge: an ${overlaps.length ? overlaps.map((o) => o.day).join(', ') : 'mehreren Tagen'} laufen ${needed} Touren gleichzeitig.`)
       return prefix + `Mit ${n - spare} statt ${n} Fahrzeugen schaffen Sie alle Touren${spike ? `, außer ${spike.day} ${spike.from} bis ${spike.to} (${spike.count} Touren gleichzeitig)` : ''}.`
     }
     const { points, okCount } = result.r
-    return `Beispielrechnung: Von 12 Beispieladressen in ${district} haben ${okCount} eine Ladezone innerhalb 150 m, ${points.length - okCount} nicht.`
+    return `Beispielrechnung: Von 12 Beispieladressen in ${district} haben ${okCount} eine Lieferzone innerhalb 150 m, ${points.length - okCount} nicht.`
   }, [result, district, prefix])
 
-  const text = useMemo(() => `Fuhrwerk, Antwort vom ${today()}\nFrage: ${p.question}\n\n${headline}\n\nBeispielrechnung, Quellen in der App. Nichts wurde gesendet.`, [headline, p.question])
+  const text = useMemo(() => `Fuhrwerk, Antwort vom ${today()}\nFrage: ${p.question}\n\n${headline}\n\n${useExample || p.flow === 'B' ? 'Beispielrechnung, ' : 'Gerechnet mit eigenen Touren, externe Werte sind Beispiele. '}Quellen in der App. Nichts wurde gesendet.`, [headline, p.question, useExample, p.flow])
 
   useEffect(() => {
     p.onSummary({ headline, text })
@@ -136,7 +137,7 @@ function FlowA({ r, ev, setEv, useExample }: { r: ReturnType<typeof evaluateEv>;
       <Tomorrow>
         {r.nein === 0
           ? `Sie können alle ${r.rows.length} Touren ab dem ersten Tag elektrisch fahren und laden am Depot.`
-          : `Sie können ${r.ja} ${r.ja === 1 ? 'Tour' : 'Touren'} ab dem ersten Tag elektrisch fahren und laden am Depot. Für ${r.rows.filter((x) => x.verdict === 'nein').map((x) => x.tour.name.split(',')[0]).join(' und ')} planen Sie 25 Minuten Ladezeit beim Kunden ein oder lassen ${r.nein === 1 ? 'diese Tour' : 'diese Touren'} vorerst beim Diesel.`}
+          : `Sie können ${r.ja} ${r.ja === 1 ? 'Tour' : 'Touren'} ab dem ersten Tag elektrisch fahren und laden am Depot. Für ${r.rows.filter((x) => x.verdict === 'nein').map((x) => x.tour.name.split(',')[0]).join(' und ')} planen Sie eine Schnellladung unterwegs ein (bei 150 kW etwa 20 bis 30 Minuten, Beispielwert) oder lassen ${r.nein === 1 ? 'diese Tour' : 'diese Touren'} vorerst beim Diesel.`}
       </Tomorrow>
       <details className="no-print mt-4">
         <summary className="cursor-pointer text-sm font-medium">Annahmen ändern</summary>
@@ -149,7 +150,7 @@ function FlowA({ r, ev, setEv, useExample }: { r: ReturnType<typeof evaluateEv>;
       <Sources items={[
         useExample ? 'Tourendaten: synthetisch, 9 Touren eines Beispielbetriebs, nicht Ihre Daten' : 'Tourendaten: Ihre Einträge unter „Meine Touren“, nur auf diesem Gerät',
         'Ladepunkte je Bezirk: Beispielwerte, werden durch das Ladesäulenregister der Bundesnetzagentur ersetzt (CC BY 4.0, monatlich)',
-        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, täglich, Datenlizenz Deutschland Namensnennung 2.0',
+        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, in dieser Version nicht eingerechnet',
         'Lieferzonen und Halteverbote: kein Datensatz (Stand 10/2026)',
         `Reichweite ${ev.rangeSummer} km, Winterfaktor ${ev.winterFactor}: Herstellerangabe, Beispiel`,
       ]} />
@@ -163,12 +164,12 @@ function FlowB({ r, district }: { r: ReturnType<typeof evaluateParking>; distric
   return (
     <div>
       <ul className="grid sm:grid-cols-3 gap-3 mb-5">
-        <Fact big={`${bad.length} Adressen`} small={`darauf konzentriert sich Ihr Bußgeld-Risiko (${bad.map((b) => b.id).join(', ')})`} />
+        <Fact big={`${bad.length} Adressen`} small={`darauf konzentriert sich das Bußgeld-Risiko im Beispiel (${bad.map((b) => b.id).join(', ')})`} />
         <Fact big={`${r.saving} € pro Monat`} small={`geschätzte Ersparnis, wenn Sie dort anders halten (${r.finePerCase} € je Vorgang, Beispiel)`} />
         <Fact big={r.level === 'hoch' ? 'Parkraum bewirtschaftet' : r.level === 'mittel' ? 'Teils bewirtschaftet' : 'Kaum bewirtschaftet'} small={`Parkzonen-Niveau in ${district}, Beispielwert bis der WFS der Senatsverwaltung angebunden ist`} />
       </ul>
-      <h3 className="font-semibold mb-2">Ihre 12 Adressen, schematisch</h3>
-      <svg viewBox="0 0 560 300" role="img" aria-label={`Schematische Karte: 12 Adressen, ${r.okCount} mit Ladezone innerhalb 150 Meter, ${bad.length} ohne. Schematisch, nicht die echte Karte.`} className="w-full max-w-2xl border border-line rounded">
+      <h3 className="font-semibold mb-2">12 Beispieladressen, schematisch</h3>
+      <svg viewBox="0 0 560 300" role="img" aria-label={`Schematische Karte: 12 Beispieladressen, ${r.okCount} mit Lieferzone innerhalb 150 Meter, ${bad.length} ohne. Schematisch, nicht die echte Karte.`} className="w-full max-w-2xl border border-line rounded">
         <rect width="560" height="300" fill="#FDFDFD" />
         {Array.from({ length: 9 }, (_, i) => 40 + i * 60).map((x) => <line key={'v' + x} x1={x} y1="20" x2={x} y2="290" stroke="#EFEFEF" />)}
         {Array.from({ length: 5 }, (_, i) => 30 + i * 65).map((y) => <line key={'h' + y} x1="20" y1={y} x2="540" y2={y} stroke="#EFEFEF" />)}
@@ -182,25 +183,25 @@ function FlowB({ r, district }: { r: ReturnType<typeof evaluateParking>; distric
         ))}
         <text x="540" y="292" textAnchor="end" fontSize="11" fill="#818181">schematisch, nicht die echte Karte</text>
       </svg>
-      <p className="text-sm text-alu mt-2">Grünes Feld = Ladezone innerhalb 150 m ({r.okCount}). Grau = keine Ladezone in 150 m ({bad.length}).</p>
+      <p className="text-sm text-alu mt-2">Grünes Feld = Lieferzone innerhalb 150 m ({r.okCount}). Grau = keine Lieferzone in 150 m ({bad.length}).</p>
       {bad.length > 0 && (
         <>
-          <h3 className="font-semibold mt-4 mb-2">Die {bad.length} ohne Ladezone</h3>
+          <h3 className="font-semibold mt-4 mb-2">Die {bad.length} ohne Lieferzone</h3>
           <ul className="list-disc pl-5 text-sm">
             {bad.map((b) => <li key={b.id}><b>{b.id}:</b> {b.note}</li>)}
           </ul>
         </>
       )}
       <Tomorrow>
-        Bei {r.points.filter((x) => x.ok).map((x) => x.id).join(', ')} halten Ihre Fahrer ab morgen in der markierten Ladezone, nicht davor.
+        Im Beispiel: Bei {r.points.filter((x) => x.ok).map((x) => x.id).join(', ')} halten die Fahrer ab morgen in der markierten Lieferzone, nicht davor.
         {bad.some((b) => b.id === 'F' || b.id === 'K') && ' Für F und K stellen Sie den Antrag auf Handwerkerparken.'}
         {bad.some((b) => b.id === 'D' || b.id === 'L') && ' Für D und L planen Sie 5 Minuten Fußweg ein.'}
       </Tomorrow>
       <Sources items={[
         `Adressdaten: synthetisch, 12 Beispieladressen in ${district}, nicht Ihre Daten`,
         `Lieferzonen und Halteverbote: kein öffentlicher Datensatz für ${district} (Stand 10/2026), Annahmen als Beispiel`,
-        'Parkzonen: Senatsverwaltung für Mobilität, Stand 09/2026, Datenlizenz Deutschland Zero 2.0, in dieser Version als Niveau je Bezirk',
-        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, täglich',
+        'Parkzonen: Senatsverwaltung für Mobilität, Stand 09/2026, Datenlizenz Deutschland Zero 2.0, in dieser Version nur als Beispiel-Niveau je Bezirk',
+        'Baustellen und Verkehrslage: VIZ Berlin über Mobilithek, in dieser Version nicht eingerechnet',
         `Bußgeld ${r.finePerCase} € je Vorgang: Bußgeldkatalog 2026, Beispielrechnung`,
       ]} />
     </div>
@@ -217,7 +218,11 @@ function FlowC({ r, useExample, tourCount }: { r: ReturnType<typeof evaluateFlee
       )}
       <ul className="grid sm:grid-cols-3 gap-3 mb-5">
         <Fact big={`${r.needed} ${r.needed === 1 ? 'Fahrzeug' : 'Fahrzeuge'}`} small={r.shortSpike ? `reichen an normalen Tagen; Spitze ${r.maxPeak} am ${r.overlaps.map((o) => o.day).join(', ')}, lösbar durch Tourentausch. Sie haben ${r.n}` : `gleichzeitig unterwegs in der Spitze; Sie haben ${r.n}`} />
-        <Fact big={`ca. ${(r.spare * r.costPerVehicle).toLocaleString('de-DE')} € pro Jahr`} small={`Vollkosten für ${r.spare} ${r.spare === 1 ? 'Fahrzeug' : 'Fahrzeuge'} (Leasing, Versicherung, Wartung, Steuer; ${r.costPerVehicle.toLocaleString('de-DE')} € je Fahrzeug, Beispielwert)`} />
+        {r.spare > 0 ? (
+          <Fact big={`ca. ${(r.spare * r.costPerVehicle).toLocaleString('de-DE')} € pro Jahr`} small={`Vollkosten für ${r.spare} ${r.spare === 1 ? 'Fahrzeug' : 'Fahrzeuge'} (Leasing, Versicherung, Wartung, Steuer; ${r.costPerVehicle.toLocaleString('de-DE')} € je Fahrzeug, Beispielwert)`} />
+        ) : (
+          <Fact big="Kein Fahrzeug frei" small={r.missing > 0 ? `Es fehlen ${r.missing}; Vollkosten je zusätzlichem Fahrzeug etwa ${r.costPerVehicle.toLocaleString('de-DE')} € pro Jahr (Beispielwert)` : 'Alle Fahrzeuge sind in der Spitze unterwegs; Einsparung erst, wenn eine Tour verschoben wird'} />
+        )}
         <Fact big={`${r.util} %`} small={`Auslastung Ihrer ${r.n} Fahrzeuge an ${r.activeDays} Tourtagen, 11 Stunden je Tag (${r.hoursWeek} Tourstunden pro Woche)`} />
       </ul>
       <h3 className="font-semibold mb-2">Gleichzeitige Touren je Wochentag</h3>
@@ -236,7 +241,7 @@ function FlowC({ r, useExample, tourCount }: { r: ReturnType<typeof evaluateFlee
       </div>
       <Tomorrow>
         {r.spare > 0
-          ? `Sie lassen ${r.spare === 1 ? 'ein Fahrzeug' : `${r.spare} Fahrzeuge`} vier Wochen stehen und fahren alle Touren mit ${r.n - r.spare}.${r.shortSpike && r.overlaps.length && r.overlaps[0].count > r.needed ? ` ${r.overlaps[0].day} ${r.overlaps[0].from} bis ${r.overlaps[0].to} laufen ${r.overlaps[0].count} Touren gleichzeitig: eine Tour 45 Minuten früher starten.` : ''} Wenn in den vier Wochen nichts liegen bleibt, geben Sie ${r.spare === 1 ? 'das Fahrzeug' : 'die Fahrzeuge'} ab, ob Leasing, Verkauf oder Pool.`
+          ? `Sie lassen ${r.spare === 1 ? 'ein Fahrzeug' : `${r.spare} Fahrzeuge`} vier Wochen stehen und fahren alle Touren mit ${r.n - r.spare}.${r.shortSpike && r.overlaps.length && r.overlaps[0].count > r.needed ? ` ${r.overlaps[0].day} ${r.overlaps[0].from} bis ${r.overlaps[0].to} laufen ${r.overlaps[0].count} Touren gleichzeitig: eine Tour so verschieben, dass sie das Fenster von ${r.overlaps[0].from} bis ${r.overlaps[0].to} nicht berührt.` : ''} Wenn in den vier Wochen nichts liegen bleibt, geben Sie ${r.spare === 1 ? 'das Fahrzeug' : 'die Fahrzeuge'} ab, ob Leasing, Verkauf oder Pool.`
           : `Alle ${r.n} Fahrzeuge werden gebraucht. Bevor Sie ein weiteres anschaffen, prüfen Sie, ob eine Tour am ${r.overlaps[0]?.day ?? 'Spitzentag'} verschoben werden kann.`}
       </Tomorrow>
       <Sources items={[

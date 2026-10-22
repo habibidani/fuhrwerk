@@ -7,6 +7,13 @@ const toMin = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number)
   return (h || 0) * 60 + (m || 0)
 }
+/** Ende vor Start = Tour über Mitternacht (Nachtschicht): Ende auf den Folgetag legen. */
+export const span = (t: { start: string; end: string }) => {
+  const s = toMin(t.start)
+  let e = toMin(t.end)
+  if (e <= s) e += 1440
+  return { s, e }
+}
 
 /* ---------- Flow A: Elektrifizierung ---------- */
 
@@ -41,7 +48,7 @@ export function evaluateEv(tours: Tour[], s: EvSettings) {
   })
   const ja = rows.filter((r) => r.verdict !== 'nein').length
   const nein = rows.length - ja
-  const kmWeek = tours.reduce((acc, t) => acc + t.km * t.days.length, 0)
+  const kmWeek = tours.reduce((acc, t) => acc + Math.max(0, t.km) * t.days.length, 0)
   const kwhWeek = Math.round(kmWeek * 0.28) // 28 kWh/100 km, Beispielwert Transporter
   return { rows, ja, nein, winter, kmWeek, kwhWeek }
 }
@@ -63,10 +70,13 @@ export function evaluateFleet(tours: Tour[], p: Profile) {
   WEEKDAYS.forEach((day) => {
     const todays = tours.filter((t) => t.days.includes(day))
     // Sweep über alle Start/Ende-Punkte
-    const events = todays.flatMap((t) => [
-      { at: toMin(t.start), d: +1 },
-      { at: toMin(t.end), d: -1 },
-    ])
+    const events = todays.flatMap((t) => {
+      const { s, e } = span(t)
+      return [
+        { at: s, d: +1 },
+        { at: e, d: -1 },
+      ]
+    })
     events.sort((a, b) => a.at - b.at || a.d - b.d)
     let cur = 0
     let peak = 0
@@ -91,19 +101,20 @@ export function evaluateFleet(tours: Tour[], p: Profile) {
   const others = peaks.filter((v) => v < maxPeak)
   const secondPeak = others.length ? Math.max(...others) : Math.max(0, maxPeak - 1)
   const peakDays = WEEKDAYS.filter((d) => perDay[d] === maxPeak && maxPeak > 0)
-  const shortSpike = maxPeak - secondPeak === 1 && peakDays.every((d) => windows[d].to - windows[d].from <= 120)
-  const needed = shortSpike ? secondPeak : maxPeak
+  const shortSpike = secondPeak >= 1 && maxPeak - secondPeak === 1 && peakDays.every((d) => windows[d].to - windows[d].from <= 120)
+  const needed = Math.max(tours.length > 0 ? 1 : 0, shortSpike ? secondPeak : maxPeak)
+  const missing = Math.max(0, needed - n)
   peakDays.forEach((d) => overlaps.push({ day: d, from: fmt(windows[d].from), to: fmt(windows[d].to), count: maxPeak }))
   const spare = Math.max(0, n - needed)
   // Auslastung je Fahrzeug: Tourstunden je Woche verteilt auf n Fahrzeuge, 55 h Verfügbarkeit (Mo bis Fr 7 bis 18 Uhr)
-  const hoursWeek = tours.reduce((acc, t) => acc + ((toMin(t.end) - toMin(t.start)) / 60) * t.days.length, 0)
+  const hoursWeek = tours.reduce((acc, t) => acc + ((span(t).e - span(t).s) / 60) * t.days.length, 0)
   const activeDays = WEEKDAYS.filter((d) => tours.some((t) => t.days.includes(d))).length || 5
   const util = Math.min(100, Math.round((hoursWeek / (n * 11 * activeDays)) * 100))
   const costPerVehicle = 7500 // Beispielwert
-  return { n, needed, spare, perDay, overlaps, maxPeak, shortSpike, util, activeDays, hoursWeek: Math.round(hoursWeek), costPerVehicle }
+  return { n, needed, spare, missing, perDay, overlaps, maxPeak, shortSpike, util, activeDays, hoursWeek: Math.round(hoursWeek), costPerVehicle }
 }
 
-const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+const fmt = (m: number) => `${String(Math.floor((m % 1440) / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
 /* ---------- Flow B: Halten und Parken ---------- */
 
@@ -125,7 +136,7 @@ export function evaluateParking(district: string) {
     { id: 'I', x: 100, y: 250 }, { id: 'J', x: 220, y: 240 }, { id: 'K', x: 340, y: 250 }, { id: 'L', x: 460, y: 240 },
   ]
   const notes: Record<string, string> = {
-    D: 'nächste Ladezone 310 m, Halteverbot ganztags',
+    D: 'nächste Lieferzone 310 m, Halteverbot ganztags',
     F: 'Ausnahmegenehmigung Handwerkerparken möglich, Antrag beim Bezirksamt',
     K: 'Ausnahmegenehmigung möglich, Baustelle bis Dezember',
     L: 'Parkraumbewirtschaftung, 2 Stunden mit Ticket erlaubt',

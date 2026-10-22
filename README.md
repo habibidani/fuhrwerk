@@ -30,7 +30,7 @@ Drei Fragen werden erkannt (deutsche Stichwort-Erkennung): E-Transporter, Halten
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # statischer Build nach dist/
-npm test           # Playwright-Tests gegen den Build (npm run build vorher)
+npm test           # baut automatisch (pretest) und startet die Playwright-Tests; beim ersten Mal vorher: npx playwright install chromium
 ```
 
 Vercel: Repo importieren, Framework „Vite“, keine weiteren Einstellungen. Es gibt kein Backend; alle Daten bleiben im Browser (`localStorage`, Präfix `fuhrwerk.v3.`). Supabase ist als nächster Schritt für Feedback und Zusagen geplant.

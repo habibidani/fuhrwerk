@@ -7,11 +7,11 @@ import { useProfile, useTours } from './lib/store'
 
 type Route = 'frage' | 'touren' | 'quellen' | 'verlauf'
 
-const ROUTES: { id: Route; label: string }[] = [
-  { id: 'frage', label: 'Frage' },
-  { id: 'touren', label: 'Meine Touren' },
-  { id: 'quellen', label: 'Datenquellen' },
-  { id: 'verlauf', label: 'Verlauf' },
+const ROUTES: { id: Route; label: string; short: string }[] = [
+  { id: 'frage', label: 'Frage', short: 'Frage' },
+  { id: 'touren', label: 'Meine Touren', short: 'Touren' },
+  { id: 'quellen', label: 'Datenquellen', short: 'Quellen' },
+  { id: 'verlauf', label: 'Verlauf', short: 'Verlauf' },
 ]
 
 function routeFromHash(): Route {
@@ -40,15 +40,15 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="no-print border-b border-line bg-paper sticky top-0 z-10">
-        <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between gap-4">
+        <div className="mx-auto max-w-5xl px-4 min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <a href="#/frage" className="flex items-center gap-3" aria-label="Fuhrwerk, Startseite">
             <span className="inline-grid grid-cols-2 gap-[2px] w-5 h-5" aria-hidden="true">
               <i className="bg-nitro block" /><i className="bg-ink block" /><i className="bg-ink block" /><i className="bg-alu block" />
             </span>
             <span className="font-semibold tracking-tight">Fuhrwerk</span>
-            <span className="label hidden sm:inline">Prototyp v3 · Beispieldaten</span>
+            <span className="label hidden sm:inline">Prototyp v3 · Beispielwerte</span>
           </a>
-          <nav aria-label="Hauptnavigation" className="flex items-center gap-1">
+          <nav aria-label="Hauptnavigation" className="flex flex-wrap items-center gap-1">
             {ROUTES.map((r) => (
               <button
                 key={r.id}
@@ -60,7 +60,7 @@ export default function App() {
                   (route === r.id ? 'bg-ink text-paper' : 'text-ink hover:bg-titan')
                 }
               >
-                {r.label}
+                <span className="sm:hidden">{r.short}</span><span className="hidden sm:inline">{r.label}</span>
                 {r.id === 'touren' && tours.length > 0 && (
                   <span className="ml-1.5 label text-[0.65rem] text-inherit opacity-70">{tours.length}</span>
                 )}
@@ -81,7 +81,7 @@ export default function App() {
         <div className="mx-auto max-w-5xl px-4 py-5 flex flex-wrap items-center justify-between gap-3">
           <p className="label">Fuhrwerk · Konzept-Prototyp v3 · CODE Berlin, M_10 · Partner-Challenge Mobility Data Space</p>
           <p className="label flex items-center gap-2">
-            <i className="inline-block w-2.5 h-2.5 bg-nitro border border-ink" aria-hidden="true" /> grün = synthetischer Beispielwert · nichts wird gesendet · keine Rechtsberatung
+            <i className="inline-block w-2.5 h-2.5 bg-nitro border border-ink" aria-hidden="true" /> grün = Beispielwert, synthetisch · nichts wird gesendet · keine Rechtsberatung
           </p>
         </div>
       </footer>
