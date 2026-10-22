@@ -2,7 +2,7 @@
 
 **Fuhrpark-Fragen, mit Daten beantwortet.**
 
-Konzept-Prototyp v3 · Team 1, CODE University of Applied Sciences Berlin · M_10 Digital Product Development · Partner-Challenge mit dem Mobility Data Space (MDS)
+Konzept-Prototyp v2 · Team 1, CODE University of Applied Sciences Berlin · M_10 Digital Product Development · Partner-Challenge mit dem Mobility Data Space (MDS)
 
 Fuhrwerk ist eine Übersetzungsschicht zwischen kleinen Berliner Handwerksbetrieben (3 bis 30 Fahrzeuge) und Mobilitätsdaten. Der Inhaber tippt eine Frage auf Deutsch und bekommt eine Antwort auf einer Seite. Der Datenkatalog bleibt hinter dem Vorhang, die eigenen Daten bleiben im Betrieb, und ein optionaler letzter Schritt lässt den Betrieb aggregierte Zahlen über seine Innung in den Datenraum zurückgeben.
 
@@ -33,7 +33,7 @@ npm run build      # statischer Build nach dist/
 npm test           # baut automatisch (pretest) und startet die Playwright-Tests; beim ersten Mal vorher: npx playwright install chromium
 ```
 
-Vercel: Repo importieren, Framework „Vite“, keine weiteren Einstellungen. Es gibt kein Backend; alle Daten bleiben im Browser (`localStorage`, Präfix `fuhrwerk.v3.`). Supabase ist als nächster Schritt für Feedback und Zusagen geplant.
+Vercel: Repo importieren, Framework „Vite“, keine weiteren Einstellungen. Es gibt kein Backend; alle Daten bleiben im Browser (`localStorage`, Präfix `fuhrwerk.v2.`). Supabase ist als nächster Schritt für Feedback und Zusagen geplant.
 
 Für die Tests in Containern ohne Playwright-Download: `PLAYWRIGHT_CHROMIUM_PATH=/pfad/zu/chrome npm test`.
 
@@ -47,7 +47,7 @@ Zwei Richtungen: Flottendaten lokal scannen, sensible Felder klassifizieren, Pri
 
 12 KI-Personas, modelliert auf öffentliche Profile realer Berliner Betriebe (12 Branchen, 2 bis 40 Fahrzeuge), klicken v1 selbst durch: 12 Läufe, 24 getippte Fragen, 228 Screenshots. Alles synthetisch, nichts davon ist Evidenz; jede Erkenntnis trägt eine Vorhersage für das echte Gespräch.
 
-### v2 Konzept (20. bis 22. Okt): neun Befunde, neun Entscheidungen
+### Neun Befunde, neun Entscheidungen (aus dem Test von v1)
 
 | Befund im synthetischen Test | Entscheidung |
 | --- | --- |
@@ -61,7 +61,7 @@ Zwei Richtungen: Flottendaten lokal scannen, sensible Felder klassifizieren, Pri
 | Vorbefüllter Beispieltext wird kopiert statt ersetzt | Leeres Feld, Beispiele als Chips |
 | Gewünschtes Ergebnis: ein Blatt Papier, Excel, WhatsApp, kein Dashboard | Antwort als A4-Karte |
 
-### v3 App (22. Okt): von der Einzeldatei zur Anwendung
+### v2 App (20. bis 22. Okt)
 
 - Vite, React, TypeScript, Tailwind; Deployment als statische Seite
 - **Meine Touren**: die Antwort rechnet mit den Touren des Betriebs (Reichweite je Tour, gleichzeitige Touren je Wochentag, Spitzen bis 2 h als lösbare Überlappung), nicht nur mit Beispieldaten
@@ -70,13 +70,13 @@ Zwei Richtungen: Flottendaten lokal scannen, sensible Felder klassifizieren, Pri
 - Annahmen (Reichweite, Winterfaktor, Ladefenster) in der Antwort änderbar
 - 8 Playwright-Tests für die drei Flows, unbekannte Eingaben, Zurückgeben, Feedback und Datenquellen
 
-### Synthetischer Re-Test von v3 (22. Okt, drei KI-Personas: Gebäudereinigung, Elektro, Pflege)
+### Synthetischer Re-Test von v2 (22. Okt, drei KI-Personas: Gebäudereinigung, Elektro, Pflege)
 
-Drei KI-Personas haben die v3-App per Playwright durchgeklickt (synthetisch, keine echten Menschen). Was daraus sofort geändert wurde: Überschrift beginnt mit „Beispielrechnung:“, solange keine eigenen Daten da sind; Flow B spricht von Beispieladressen, nicht von „Ihren“; Warnung, wenn weniger Touren als Fahrzeuge eingetragen sind; Sonntag und „Umland (Brandenburg)“ ergänzt; Ladefenster-Kachel an das Ergebnis gekoppelt; „außer …“ nur bei echter Überlappung; Singular/Plural; Stichwörter „zu viele“, „Autos“, „Wagen“, „Schicht“, „Umstellung“, „elektrifizieren“; Chip-Wahl im Verlauf als „Stichwort nicht erkannt“ markiert; Zurückgeben als Opt-in; kein vorbelegter Bezirk; die Antwort sagt, was sie nicht auswertet (Zahlen und Uhrzeiten aus der Frage). Offen: Uhrzeit-Logik für Parkzonen, „welche 4 Touren zuerst“, Schichtlogik je Branche, Touren-Import.
+Drei KI-Personas haben die v2-App per Playwright durchgeklickt (synthetisch, keine echten Menschen). Was daraus sofort geändert wurde: Überschrift beginnt mit „Beispielrechnung:“, solange keine eigenen Daten da sind; Flow B spricht von Beispieladressen, nicht von „Ihren“; Warnung, wenn weniger Touren als Fahrzeuge eingetragen sind; Sonntag und „Umland (Brandenburg)“ ergänzt; Ladefenster-Kachel an das Ergebnis gekoppelt; „außer …“ nur bei echter Überlappung; Singular/Plural; Stichwörter „zu viele“, „Autos“, „Wagen“, „Schicht“, „Umstellung“, „elektrifizieren“; Chip-Wahl im Verlauf als „Stichwort nicht erkannt“ markiert; Zurückgeben als Opt-in; kein vorbelegter Bezirk; die Antwort sagt, was sie nicht auswertet (Zahlen und Uhrzeiten aus der Frage). Offen: Uhrzeit-Logik für Parkzonen, „welche 4 Touren zuerst“, Schichtlogik je Branche, Touren-Import.
 
 ## Branches und Deployment
 
-- `main`: Stand, der auf der Bühne läuft. Vercel baut daraus die Produktions-URL.
+- `main`: Stand, der auf der Bühne läuft. Live über GitHub Pages (https://habibidani.github.io/fuhrwerk/, einmalig unter Settings › Pages › Source „GitHub Actions“ wählen) oder Vercel (Repo importieren, Framework Vite).
 - `staging`: Arbeitsstand; Vercel baut daraus automatisch eine Preview-URL. Wenn Build und Tests grün sind (GitHub Actions, `.github/workflows/ci.yml`), nach `main` mergen: `git checkout main && git merge --ff-only staging && git push`.
 - Jeder Push auf `main` oder `staging` baut die App und lässt die 8 Playwright-Tests laufen.
 

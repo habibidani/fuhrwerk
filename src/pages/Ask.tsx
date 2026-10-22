@@ -208,7 +208,7 @@ export default function Ask({ profile, setProfile, tours }: Props) {
                 {(['A', 'B', 'C'] as Flow[]).map((f) => (
                   <button key={f} type="button" className="chip" aria-pressed={flow === f} onClick={() => chooseFlow(f)}>{FLOW_LABEL[f]}</button>
                 ))}
-                <button type="button" className="btn btn-ghost mt-2" onClick={() => { say('Notiert, nur auf diesem Gerät.'); setHistory((h) => [{ id: uid(), at: nowIso(), question: question.trim(), flow: null, headline: 'Nicht beantwortbar in v3' }, ...h]); reset() }}>
+                <button type="button" className="btn btn-ghost mt-2" onClick={() => { say('Notiert, nur auf diesem Gerät.'); setHistory((h) => [{ id: uid(), at: nowIso(), question: question.trim(), flow: null, headline: 'Nicht beantwortbar in v2' }, ...h]); reset() }}>
                   Keine davon, Frage notieren und neu beginnen
                 </button>
               </div>

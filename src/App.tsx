@@ -46,7 +46,7 @@ export default function App() {
               <i className="bg-nitro block" /><i className="bg-ink block" /><i className="bg-ink block" /><i className="bg-alu block" />
             </span>
             <span className="font-semibold tracking-tight">Fuhrwerk</span>
-            <span className="label hidden sm:inline">Prototyp v3 · Beispielwerte</span>
+            <span className="label hidden sm:inline">Prototyp v2 · Beispielwerte</span>
           </a>
           <nav aria-label="Hauptnavigation" className="flex flex-wrap items-center gap-1">
             {ROUTES.map((r) => (
@@ -79,7 +79,7 @@ export default function App() {
 
       <footer className="no-print border-t border-line">
         <div className="mx-auto max-w-5xl px-4 py-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="label">Fuhrwerk · Konzept-Prototyp v3 · CODE Berlin, M_10 · Partner-Challenge Mobility Data Space</p>
+          <p className="label">Fuhrwerk · Konzept-Prototyp v2 · CODE Berlin, M_10 · Partner-Challenge Mobility Data Space</p>
           <p className="label flex items-center gap-2">
             <i className="inline-block w-2.5 h-2.5 bg-nitro border border-ink" aria-hidden="true" /> grün = Beispielwert, synthetisch · nichts wird gesendet · keine Rechtsberatung
           </p>

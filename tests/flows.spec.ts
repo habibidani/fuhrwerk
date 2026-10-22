@@ -6,7 +6,7 @@ async function ask(page: Page, q: string) {
   await page.getByRole('button', { name: 'Frage stellen' }).click()
 }
 
-test.describe('Fuhrwerk v3', () => {
+test.describe('Fuhrwerk v2', () => {
   test('Flow A: E-Transporter, Beispieltouren, Antwort mit Zahl', async ({ page }) => {
     await ask(page, 'Lohnt sich ein E-Transporter für meine Touren?')
     await expect(page.getByRole('heading', { name: 'So hat Fuhrwerk Ihre Frage verstanden.' })).toBeVisible()
