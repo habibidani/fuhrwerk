@@ -56,7 +56,7 @@ Zwei Richtungen: Flottendaten lokal scannen, sensible Felder klassifizieren, Pri
 | Katalog zeigt Fit-Prozente, „12 Metropolregionen“, „€€“ | Abdeckung je Bezirk, Preis in Euro, benannte Quellen, Lizenz und Stand |
 | „Lokale Flottendaten nutzen“ hebt „Rohdaten bleiben lokal“ auf | Ein Satz: Ihre Daten bleiben im Haus, nur das Ergebnis wird gerechnet |
 | „Sourcing-Anfrage erzeugen“: 9 von 12 brechen hier ab | Ergebnis ist eine druckbare A4-Karte oder eine WhatsApp-Nachricht; „nichts gesendet“ sichtbar |
-| Upload-und-Veröffentlichen-Modus von 12 von 12 abgelehnt | Nur als optionaler letzter Schritt: zurückgeben, aggregiert, über die Innung |
+| Upload-und-Veröffentlichen-Modus von 12 von 12 abgelehnt oder nur geduldet | Nur als optionaler letzter Schritt: zurückgeben, aggregiert, über die Innung |
 | Freigabe-Gates wirken wie Konzern-Theater für zehn Leute | Ein klares Datenschutz-Label, keine Gates |
 | Vorbefüllter Beispieltext wird kopiert statt ersetzt | Leeres Feld, Beispiele als Chips |
 | Gewünschtes Ergebnis: ein Blatt Papier, Excel, WhatsApp, kein Dashboard | Antwort als A4-Karte |
